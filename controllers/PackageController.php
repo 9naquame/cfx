@@ -71,14 +71,6 @@ class PackageController extends Controller
      */
     public function getContents()
     {
-        Application::addStylesheet("css/permissions.css");
-        $menu = unserialize(file_get_contents("app/cache/menus/menu_{$_SESSION["role_id"]}.object"));
-        $menu = $menu["/{$_GET["q"]}"];
-        $return = "<h2>{$menu["title"]}</h2>";
-        
-        $return .= $this->getChildren($menu)."<div style='clear:both'></div>";
-
-        return "<div id='permissions'>$return</div>";
     }
 }
 
