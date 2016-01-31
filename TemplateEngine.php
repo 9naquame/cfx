@@ -50,19 +50,15 @@ class TemplateEngine extends Smarty
      * @param string $template
      * @param string $data
      */
-    public static function render($template, $data)
+    public static function render($template, $data, $proto = 'file')
     {
         $t = new TemplateEngine();
         $t->assign($data);
-        return $t->fetch("file:/" . getcwd() . "/$template");
+        return @$t->fetch("{$proto}:" . ($proto === 'file' ? "/" . getcwd() . "/" : '') . "$template");
     }
     
     public static function renderString($template, $data)
     {
-        $file = "app/temp/" . uniqid() . ".tpl";
-        file_put_contents($file, $template);
-        $rendered = self::render($file, $data);
-        unlink($file);
-        return $rendered; 
-   }
+        return self::render($template, $data, 'string');
+    }
 }
