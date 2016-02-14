@@ -43,7 +43,7 @@ if(isset($_REQUEST["__api_session_id"]))
  * Initialize the session handler
  */
 
-require "wyf_bootstrap.php";
+require "cfx_bootstrap.php";
 
 if(Application::$config['custom_sessions'])
 {

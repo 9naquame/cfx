@@ -29,10 +29,13 @@
  */
 class TemplateEngine extends Smarty
 {
+    const PROTO_FILE = 'file';
+    const PROTO_STRING = 'string';
+    
     /**
      * Sets up the smarty engine
      */
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
         $this->template_dir = SOFTWARE_HOME . 'app/themes/' . Application::$config['theme'] . '/templates';
@@ -44,11 +47,16 @@ class TemplateEngine extends Smarty
     }
     
     /**
-     * A static function for invoking the smarty template engine given the 
-     * template and the data variables.
+     * Renders a given smarty template and returns the output as a string.
+     * The template passed to this function could either be a string or a file.
+     * The type of template is specified through the $proto parameter. If a
+     * protocol is not specified the render function reads in a file.
      * 
-     * @param string $template
-     * @param string $data
+     * @param string $template Template string or path to template
+     * @param array $data The data to render the template with.
+     * @param string $proto The type of template. 'file' for files and 'string' for strings.
+     *
+     * @return string
      */
     public static function render($template, $data, $proto = 'file')
     {
@@ -57,6 +65,12 @@ class TemplateEngine extends Smarty
         return @$t->fetch("{$proto}:" . ($proto === 'file' ? "/" . getcwd() . "/" : '') . "$template");
     }
     
+    /**
+     * Render a string template and output html.
+     *
+     * @param string $template The smarty template string
+     * @return string
+     */
     public static function renderString($template, $data)
     {
         return self::render($template, $data, 'string');
