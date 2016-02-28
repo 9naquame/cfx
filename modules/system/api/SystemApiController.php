@@ -45,7 +45,7 @@ class SystemApiController extends Controller
             }
         }
 
-        if($_SESSION["logged_in"]==false && $_GET["q"] != "api/login")
+        if($_SESSION["logged_in"]==false && $_GET["q"] != "system/api/login")
         {
             print $this->format(array("success"=>false, "status"=>101, "message"=>"Not authenticated"));
             die();
@@ -75,7 +75,7 @@ class SystemApiController extends Controller
             $method = new ReflectionMethod($className, $methodName);
             $ret = $method->invokeArgs(null, $params);
             return json_encode(
-                array('success' => true, 'response' => $ret)
+                array('success' => true, 'response' => $ret, "data" => $ret)
             );
         }
         catch(Exception $e)
@@ -93,11 +93,13 @@ class SystemApiController extends Controller
 
     public function rest($params)
     {
-        if(is_numeric(end($params)))
+		$bindArray = array();
+        if(is_numeric(end($params))  || $_GET['has_id'] == 'yes')
         {
             $id = array_pop($params);
         }
         $model = Model::load(implode('.', $params));
+        //$id = $model->datastore->escape($id);
         switch($_SERVER['REQUEST_METHOD'])
         {
             case 'GET':
@@ -108,12 +110,14 @@ class SystemApiController extends Controller
                 }
                 if($id != '')
                 {
-                    $conditions[] = $model->getKeyField() . "='$id'";
+                    $conditions[] = $model->getKeyField() . "=?";
+					$bindArray = array_merge($bindArray,[$id]);
                 }
 
                 $data = $model->get(
                     array(
-                        'conditions' => implode(" AND ", $conditions)
+                        'filter' => implode(" AND ", $conditions),
+						'bind'	=>	$bindArray
                     ),
                     Model::MODE_ASSOC,
                     true,
@@ -294,6 +298,8 @@ class SystemApiController extends Controller
                     $_SESSION["user_firstname"] = $userData[0]["first_name"];
                     $_SESSION["user_lastname"] = $userData[0]["last_name"];
                     $_SESSION["role_id"] = $userData[0]["role_id"];
+                    $_SESSION['branch_id'] = $userData[0]['branch_id'];
+                    Sessions::bindUser($userData[0]['user_id']);
                     User::log("Logged in through API");
                     break;
 
@@ -364,20 +370,24 @@ class SystemApiController extends Controller
 
         if(isset($_REQUEST["conditions"]))
         {
-            $conditions = explode(",",$_REQUEST["conditions"]);
+            $conditions = explode(",",$_REQUEST["conditions"]); 
             array_pop($conditions);
+            $bind = [];
             //array_shift($conditions);
             foreach($conditions as $i => $condition)
             {
                 if(substr_count($condition,"=="))
                 {
                     $parts = explode("==",$condition);
-                    $conditions[$i] = $parts[0]."=".$parts[1];
+                    $conditions[$i] = "{$parts[0]} = ?";
+                    $bind[] = $parts[1];
                 }
                 else
                 {
                     $parts = explode("=",$condition);
-                    $conditions[$i] = $model->getSearch($parts[1],$parts[0]);//"instr(lower({$parts[0]}),lower('".$model->escape($parts[1])."'))>0";//$parts[0] ." in '".$model->escape($parts[1])."'";
+                    $search = $model->getSearch($parts[1],$parts[0]);
+                    $conditions[$i] = "{$search['filter']}";//"instr(lower({$parts[0]}),lower('".$model->escape($parts[1])."'))>0";//$parts[0] ." in '".$model->escape($parts[1])."'";
+                    $bind[] = $search['bind'];
                 }
             }
             $condition_opr = isset($_REQUEST["conditions_opr"])?$_REQUEST["conditions_opr"]:"AND";
@@ -390,8 +400,9 @@ class SystemApiController extends Controller
             "sort_type"=>isset($_REQUEST["sort_type"])?$_REQUEST["sort_type"]:"ASC",
             "limit"=>$object["limit"],
             "offset"=>$_REQUEST["offset"],
-            "conditions"=>"($conditions) " . ($object['and_conditions'] != '' ? " AND ({$object['and_conditions']})" : '')
-               . ($_REQUEST['and_conditions'] != '' ? " AND ({$_REQUEST['and_conditions']})" : '')
+            "filter"=>"($conditions) " . ($object['and_conditions'] != '' ? " AND ({$object['and_conditions']})" : '')
+               . ($_REQUEST['and_conditions'] != '' ? " AND ({$_REQUEST['and_conditions']})" : ''),
+            "bind" => array_merge($bind, is_array($object['and_bound_data']) ? $object['and_bound_data'] : [])
         );
 
         //$data = $model->formatData();
@@ -423,5 +434,5 @@ class SystemApiController extends Controller
                 print json_encode($data);
                 break;
         }        
-    }    
+    }            
 }
