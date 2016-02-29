@@ -1,7 +1,7 @@
 <?php
 /**
  * A Controller which validates a user and logs her in. This controller allows
- * first time users to create a new password when they log in.
+ * first time users to create a new password when they log in. 
  *
  * @author james
  *
@@ -33,8 +33,8 @@ class SystemLoginController extends Controller
         $form = $form->render();
 
         return "<h2>Change Password</h2>"
-               . "<p>It appears that this is the first time you are logging in. "
-               . "Please change your password.</p> $form";
+            . "<p>It appears that this is the first time you are logging in. "
+            . "Please change your password.</p> $form";
     }
 
     /**
@@ -49,7 +49,7 @@ class SystemLoginController extends Controller
         
         if ($_SESSION["logged_in"])
         {
-        	Application::redirect(Application::getLink("/"));
+        	Application::redirect("/");
         };
         $form = new Form();
         $form->setRenderer("default");
@@ -63,11 +63,6 @@ class SystemLoginController extends Controller
         $form->setShowClear(false);
         
         return $form->render();
-    }
-
-    public function api()
-    {
-        
     }
 
     /**
@@ -110,17 +105,24 @@ class SystemLoginController extends Controller
      * @param $callback_pass
      * @return unknown_type
      */
-    public static function callback($data, $form, $callback_pass)
+    public static function callback($data, $form, $callback_pass = null)
     {
         $user = Model::load("system.users");
         $userData = $user->get(
             array(
-                "conditions" => "user_name='{$data["username"]}'"
+                "filter" => "user_name=?",
+                "bind" => [$data["username"]]
             ), Model::MODE_ASSOC, false, false);
-            
-        if($userData[0]["role_id"] == null)
+                
+        if(count($userData) == 0)
+        {
+            $form->addError("Please check your username or password");
+            return true;
+        }
+        else if($userData[0]["role_id"] == null)
         {
             $form->addError("Sorry! your account has no role attached!"); 
+            return true;
         }
         else if(User::getPermission("can_log_in_to_web", $userData[0]["role_id"]))
         {
@@ -129,14 +131,13 @@ class SystemLoginController extends Controller
             /* Verify the password of the user or check if the user is logging in
              * for the first time.
              */
-            if ($userData[0]["password"] == md5($data["password"]) 
-                || $userData[0]["user_status"] == 2 )
+            if($userData[0]["password"] == md5($data["password"]) || $userData[0]["user_status"] == 2 )
             {
                 switch ($userData[0]["user_status"])
                 {
                     case "0":
-                        $form->addErrorr("Your account is currently inactive"
-                             . "please contact the system administrator.");
+                        $form->addError("Your account is currently inactive"
+                                  . "please contact the system administrator.");
                         return true;
                         break;
                     
@@ -146,8 +147,11 @@ class SystemLoginController extends Controller
                         $_SESSION["user_name"] = $userData[0]["user_name"];
                         $_SESSION["user_firstname"] = $userData[0]["first_name"];
                         $_SESSION["user_lastname"] = $userData[0]["last_name"];
+                        $_SESSION["read_only"] = $userData[0]['read_only'];
                         $_SESSION["role_id"] = $userData[0]["role_id"];
+                        $_SESSION['branch_id'] = $userData[0]['branch_id'];
                         $_SESSION["department_id"] = $userData[0]['department_id'];
+                        Sessions::bindUser($userData[0]['user_id']);
                         User::log("Logged in");
                         Application::redirect($home);
                         break;
@@ -160,7 +164,9 @@ class SystemLoginController extends Controller
                         $_SESSION["department_id"] = $userData[0]['department_id'];
                         $_SESSION["user_firstname"] = $userData[0]["first_name"];
                         $_SESSION["user_lastname"] = $userData[0]["last_name"];
+                        $_SESSION['branch_id'] = $userData[0]['branch_id'];
                         $_SESSION["user_mode"] = "2";
+                        Sessions::bindUser($userData[0]['user_id']);
                         User::log("Logged in for first time");
                         Application::redirect($home);
                         break;
@@ -175,6 +181,7 @@ class SystemLoginController extends Controller
         else
         {
             $form->addError("You are not allowed to log in from this terminal");
+            return true;
         }
     }
 }
