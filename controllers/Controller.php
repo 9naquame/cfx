@@ -9,10 +9,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -20,7 +20,7 @@
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 
@@ -59,8 +59,8 @@ class Controller
     public $label;
 
     /**
-     * A piece of text which briefly describes this controller. These 
-     * descriptions are normally rendered as part of the views. 
+     * A piece of text which briefly describes this controller. These
+     * descriptions are normally rendered as part of the views.
      * @var string
      */
     public $description;
@@ -69,7 +69,7 @@ class Controller
      * A variable which contains the contents of a given controller after a
      * particular method has been called. This property is what different
      * controllers use when interfacing with each other.
-     * 
+     *
      * @var string
      */
     public $content;
@@ -79,7 +79,7 @@ class Controller
      * @var string
      */
     const TYPE_MODULE = "module";
-    
+
     /**
      * The constant represents controllers that are loaded from raw classes.
      * @var string
@@ -111,32 +111,36 @@ class Controller
      * @var string
      */
     public $name;
-    
+
     /**
      * Tells whether the model has been redirected or not.
      * @var boolean
      */
     public $redirected;
-    
+
     /**
-     * A path to redirect controllers to. 
+     * A path to redirect controllers to.
      * @warning This value is automatically set when
      *      redirections are done. They should never be modified unless the
      *      developpers realy know what they are doing.
      * @var string
      */
     public $redirectPath;
-    
+
     /**
      * The new package path to use for redirected packages.
      * @var string
      */
     public $redirectedPackage;
-    
+
     public $mainRedirectedPackage;
-    
+
     public $redirectedPackageName;
-    
+
+    private static $templateEngine;
+
+    protected $actionMethod;
+
     /**
      * A utility method to load a controller. This method loads the controller
      * and fetches the contents of the controller into the Controller::$contents
@@ -150,12 +154,12 @@ class Controller
      *                        controller should be displayed.
      * @return Controller
      */
-    public static function load($path,$get_contents=true)
+    public static function load($path,$get_contents=true, $actionMethod = null)
     {
         global $redirectedPackage;
         global $redirectPath;
         global $packageSchema;
-        
+
         $controller_path = "";
         $controller_name = "";
         $redirected = false;
@@ -163,12 +167,14 @@ class Controller
         $package_name = "";
         $package_main = "";
 
+        $path = self::trimPath($path);
+
         //Go through the whole path and build the folder location of the system
         for($i = 0; $i<count($path); $i++)
         {
             $p = $path[$i];
             $baseClassName = $package_name . Application::camelize("$controller_path/$p", "/");
-            
+
             if(file_exists(SOFTWARE_HOME . "app/modules/$controller_path/$p/{$baseClassName}Controller.php"))
             {
                 $controller_class_name = $baseClassName . "Controller";
@@ -210,7 +216,7 @@ class Controller
             {
                 include(SOFTWARE_HOME . "app/modules/$controller_path/$p/package_redirect.php");
                 $redirected = true;
-                $previousControllerPath = $controller_path . "/$p"; 
+                $previousControllerPath = $controller_path . "/$p";
                 $controller_path = "";
                 $redirectedPackage = $package_path;
                 $packageSchema = $package_schema;
@@ -232,11 +238,11 @@ class Controller
                 $controller_path .= "/$p";
                 $controller_type = Controller::TYPE_REPORT;
                 break;
-            }            
+            }
             else
             {
                 $controller_path .= "/$p";
-                if($redirected) $package_main .= "$p."; 
+                if($redirected) $package_main .= "$p.";
             }
         }
 
@@ -255,11 +261,6 @@ class Controller
                 {
                     $controller_name = $controller_class_name;
                     $controller = new $controller_class_name();
-                    $controller->redirected = $redirected;
-                    $controller->redirectPath = $redirect_path;
-                    $controller->redirectedPackage = $package_path;
-                    $controller->mainRedirectedPackage = $package_main;
-                    $controller->redirectedPackageName = $package_name;
                 }
                 break;
 
@@ -269,7 +270,7 @@ class Controller
                 $controller_name = "ModelController";
                 $controller = new ModelController($model, $package_path);
                 break;
-                
+
             case Controller::TYPE_REPORT:
                 $controller = new XmlDefinedReportController($redirect_path . $controller_path."/report.xml", $redirected);
                 $controller_name = "XmlDefinedReportController";
@@ -298,10 +299,23 @@ class Controller
                 }
         }
 
+        if($redirected)
+        {
+            $controller->setRedirectParameters(
+                array(
+                    'redirected' => $redirected,
+                    'redirect_path' => $redirect_path,
+                    'package_path' => $package_path,
+                    'package_main' => $package_main,
+                    'package_name' => $package_name
+                )
+            );
+        }
+
         // If the get contents flag has been set return all the contents of this
         // controller.
         $controller->path = $previousControllerPath . $controller_path;
-        
+
         if($get_contents)
         {
             if($i == count($path)-1 || $force_output)
@@ -310,33 +324,68 @@ class Controller
             }
             else
             {
-                if(method_exists($controller,$path[$i+1]))
+                $controller->actionMethod = $path[$i+1];
+                if(method_exists($controller, $controller->actionMethod))
                 {
                     $controller_class = new ReflectionClass($controller_name);
-                    $method = $controller_class->GetMethod($path[$i+1]);
+                    $method = $controller_class->GetMethod($controller->actionMethod);
                     $ret = $method->invoke($controller,array_slice($path,$i+2));
                 }
                 else
                 {
-                    $ret = "<h2>Error</h2> Method does not exist. [" . $path[$i+1] . "]";
+                    $ret = "<h2>Error</h2> Method does not exist. [" . $controller->actionMethod . "]";
                 }
             }
-            
-            
+
+
             if(is_array($ret))
             {
-                $t = new TemplateEngine();
+                $t = self::getTemplateEngine();
                 $t->assign('controller_path', $controller_path);
                 $t->assign($ret["data"]);
-                $controller->content = $t->fetch(isset($ret["template"])?$ret["template"]:$path[$i+1].".tpl");
+                $controller->content = $t->fetch(
+                    isset($ret["template"]) ? $ret["template"] : $this->actionMethod . ".tpl"
+                );
             }
             else if(is_string($ret))
             {
                 $controller->content = $ret;
             }
         }
-        
+        else if($actionMethod !== null)
+        {
+            $controller->actionMethod = $actionMethod;
+        }
+
         return $controller;
+    }
+
+    public function setRedirectParameters($redirect)
+    {
+        $this->redirectPath = $redirect['redirect_path'];
+        $this->redirectedPackage = $redirect['package_path'];
+        $this->mainRedirectedPackage = $redirect['package_main'];
+        $this->redirectedPackageName = $redirect['package_name'];
+        $this->redirected = $redirect['redirected'];
+    }
+
+    public static function getTemplateEngine()
+    {
+        if(!is_object(self::$templateEngine))
+        {
+            self::$templateEngine = new TemplateEngine();
+        }
+        return self::$templateEngine;
+    }
+
+    private function trimPath($path)
+    {
+        $output = array();
+        foreach($path as $leg)
+        {
+            if($leg != '') $output[] = $leg;
+        }
+        return $output;
     }
 
     /**
@@ -357,7 +406,7 @@ class Controller
      */
     public function showInMenu($value = '')
     {
-        if($value === '') 
+        if($value === '')
         {
             return $this->_showInMenu;
         }
@@ -367,7 +416,7 @@ class Controller
             return $this;
         }
     }
-    
+
     /**
      * An empty implementation of the getPermissions method
      */
@@ -378,29 +427,17 @@ class Controller
 
     /**
      * Returns an array description to be used for rendering the smarty template.
-     * 
-     * @param string   $template
-     * @param array    $data
-     * @deprecated Do not use in new code
-     */
-    public function getTemplateDescription($template,$data)
-    {
-        return array("template"=>"file:/".getcwd()."/app/modules/$template","data"=>$data);
-    }
-    
-    /**
-     * Returns an array description to be used for rendering the smarty template.
      * This method expects the template file to exist in the same directory
      * as the controller class. Also note that when specifying the name of the
      * template file the .tpl extension should not be specified. For exampple to
      * load a template called send_mail.tpl from a particular controller...
-     * 
+     *
      * @code
      * ..
      * $this->template('send_mail', $mailData);
      * ..
      * @endcode
-     * 
+     *
      * @param string $template The name of the template file which exists in the
      *      same directory as the controller. The file name must have a .tpl
      *      extension which should not be specified.
@@ -410,25 +447,25 @@ class Controller
     public function template($template, $data)
     {
         return array(
-           "template"=>"file:/" . getcwd() . "/app/modules/{$this->path}/{$template}.tpl", 
+           "template"=>"file:/" . getcwd() . "/app/modules/{$this->path}/{$template}.tpl",
            "data"=>$data
         );
     }
-    
+
     /**
-     * 
+     *
      * @param type $arbitraryTemplate
      * @param type $data
      * @return type
      */
-    public function arbitraryTemplate($arbitraryTemplate, $data)
+    public function arbitraryTemplate($arbitraryTemplate, $data, $absolute = false)
     {
         return array(
-            'template' => "file:/".SOFTWARE_HOME."/$arbitraryTemplate",
-            'data' => $data        
+            'template' => "file:".($absolute ? '' : SOFTWARE_HOME . '/')."$arbitraryTemplate",
+            'data' => $data
         );
     }
-    
+
     /**
      * A utility method which draws an attribute table.
      * @param unknown_type $attributes
@@ -443,11 +480,11 @@ class Controller
         $ret .= "</table>";
         return $ret;
     }
-    
+
     /**
      * Returns the name of the controller class. This method is very useful when
      * specifying callbacks from a Form to a static method in a controller.
-     * 
+     *
      * @code
      * class SomeController extends Controller
      * {
@@ -460,14 +497,14 @@ class Controller
      *         );
      *         $form->setCallback($this->getClassName() . '::doLogin', null);
      *     }
-     * 
+     *
      *     public static function doLogin($data, &$form, $callback)
      *     {
      *         // Use this for the login logic
      *     }
      * }
      * @endcode
-     * 
+     *
      * @return
      */
     public function getClassName()
@@ -475,5 +512,19 @@ class Controller
         $objectInfo = new ReflectionObject($this);
         return $objectInfo->getName();
     }
-    
+
+    public function setLabel($label)
+    {
+        $this->label = $label;
+    }
+
+    public function getLabel()
+    {
+        return $this->label;
+    }
+
+    public function setActionMethod($actionMethod)
+    {
+        $this->actionMethod = $actionMethod;
+    }
 }

@@ -76,6 +76,7 @@ class XmlDefinedReportController extends ReportController {
      */
     public function generate($params) {
         $report = $this->getReport();
+
         $reader = new XMLReader();
         $reader->XML($this->xml->asXML());
 
@@ -148,7 +149,6 @@ class XmlDefinedReportController extends ReportController {
 
                     // Generate filter conditions
                     $filters = array();
-                    $boundData = array();
                     $filterSummaries = array();
                     $keyOffset = 0;
                     foreach ($fields as $key => $field) {
@@ -173,7 +173,7 @@ class XmlDefinedReportController extends ReportController {
 
                         if (isset($field["sort"])) {
                             $sortField = "{$model->database}.{$fieldInfo["name"]}";
-                            $hardCodedSorting[] = array("field" => $sortField, "type" => (string)$field["sort"]);
+                            $hardCodedSorting[] = array("field" => $sortField, "type" => $field["sort"]);
                         }
 
                         if (isset($field["labelsField"])) {
@@ -214,8 +214,7 @@ class XmlDefinedReportController extends ReportController {
 
                         if (array_search($model->getKeyField(), $this->referencedFields) === false || $fieldInfo["type"] == "double" || $fieldInfo["type"] == "date") {
                             if ($value != null) {
-                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}= ?";
-                                $boundData[] = (string)$value;
+                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}='$value'";
                                 continue;
                             }
 
@@ -226,18 +225,12 @@ class XmlDefinedReportController extends ReportController {
                                         switch ($_POST[$name . "_" . $fieldInfo["name"] . "_option"]) {
                                             case "CONTAINS":
                                                 $filterSummaries[] = "{$headers[$key]} containing {$_POST[$name . "_" . $fieldInfo["name"] . "_value"]}";
-                                                $search = $models[$modelInfo["model"]]->getSearch(
-                                                    $_POST[$name . "_" . $fieldInfo["name"] . "_value"],
-                                                    "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}"
-                                                );
-                                                $filters[] = $search['filter'];
-                                                $boundData[] = (string)$search['bind'];
+                                                $filters[] = $models[$modelInfo["model"]]->getSearch($models[$modelInfo["model"]]->escape($_POST[$name . "_" . $fieldInfo["name"] . "_value"]), "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}");
                                                 break;
 
                                             case "EXACTLY";
                                                 $filterSummaries[] = "{$headers[$key]} being exactly {$_POST[$name . "_" . $fieldInfo["name"] . "_value"]}";
-                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}=?";
-                                                $boundData[] = (string)$_POST[$name . "_" . $fieldInfo["name"] . "_value"];
+                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}='" . $models[$modelInfo["model"]]->escape($_POST[$name . "_" . $fieldInfo["name"] . "_value"]) . "'";
                                                 break;
                                         }
                                     }
@@ -249,25 +242,19 @@ class XmlDefinedReportController extends ReportController {
                                         switch ($_POST[$name . "_" . $fieldInfo["name"] . "_option"]) {
                                             case "EQUALS":
                                                 $filterSummaries[] = "{$headers[$key]} equals {$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]}";
-                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} = ?";
-                                                $boundData[] = (string)$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"];
+                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}='" . $models[$modelInfo["model"]]->escape($_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]) . "'";
                                                 break;
-                                            
                                             case "GREATER":
                                                 $filterSummaries[] = "{$headers[$key]} greater than {$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]}";
-                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}> ? ";
-                                                $boundData[] = (string)$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"];
+                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}>'" . $models[$modelInfo["model"]]->escape($_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]) . "'";
                                                 break;
                                             case "LESS":
                                                 $filterSummaries[] = "{$headers[$key]} less than {$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]}";
-                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} < ?";
-                                                $boundData[] = (string)$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"];
+                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}<'" . $models[$modelInfo["model"]]->escape($_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]) . "'";
                                                 break;
                                             case "BETWEEN":
                                                 $filterSummaries[] = "{$headers[$key]} between {$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]} and {$_POST[$name . "_" . $fieldInfo["name"] . "_end_value"]}";
-                                                $filters[] = "({$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} > ? AND {$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}<= ?";
-                                                $boundData[] = (string)$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"];
-                                                $boundData[] = (string)$_POST[$name . "_" . $fieldInfo["name"] . "_end_value"];
+                                                $filters[] = "({$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}>='" . $models[$modelInfo["model"]]->escape($_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]) . "' AND {$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}<='" . $models[$modelInfo["model"]]->escape($_POST[$name . "_" . $fieldInfo["name"] . "_end_value"]) . "')";
                                                 break;
                                         }
                                     }
@@ -282,24 +269,19 @@ class XmlDefinedReportController extends ReportController {
                                         switch ($_POST[$name . "_" . $fieldInfo["name"] . "_option"]) {
                                             case "EQUALS":
                                                 $filterSummaries[] = "{$headers[$key]} on {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]}";
-                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} = ?";
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
+                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}='" . $models[$modelInfo["model"]]->escape(Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"])) . "'";
                                                 break;
                                             case "GREATER":
                                                 $filterSummaries[] = "{$headers[$key]} after {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]}";
-                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} > ?"; 
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
+                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}>'" . $models[$modelInfo["model"]]->escape(Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"])) . "'";
                                                 break;
                                             case "LESS":
                                                 $filterSummaries[] = "{$headers[$key]} before {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]}";
-                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} < ?'";
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
+                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}<'" . $models[$modelInfo["model"]]->escape(Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"])) . "'";
                                                 break;
                                             case "BETWEEN":
                                                 $filterSummaries[] = "{$headers[$key]} from {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]} to {$_POST[$name . "_" . $fieldInfo["name"] . "_end_date"]}";
-                                                $filters[] = "({$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} >= ? AND {$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}<=?)";
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_end_date"]);
+                                                $filters[] = "({$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}>='" . $models[$modelInfo["model"]]->escape(Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"])) . "' AND {$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}<='" . $models[$modelInfo["model"]]->escape(Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_end_date"])) . "')";
                                                 break;
                                         }
                                     }
@@ -317,10 +299,8 @@ class XmlDefinedReportController extends ReportController {
 
                                             $condition = array();
                                             foreach ($_POST[$name . "_" . $fieldInfo["name"] . "_value"] as $value) {
-                                                if ($value != ""){
-                                                    $condition[] = "{$m->getDatabase()}.{$fieldInfo["name"]}=?";
-                                                    $boundData[] = $value;
-                                                }
+                                                if ($value != "")
+                                                    $condition[] = "{$m->getDatabase()}.{$fieldInfo["name"]}='" . $m->escape($value) . "'";
                                             }
                                         }
                                         else if ($_POST[$name . "_" . $fieldInfo["name"] . "_option"] == "EXCLUDE") {
@@ -332,10 +312,8 @@ class XmlDefinedReportController extends ReportController {
 
                                             $condition = array();
                                             foreach ($_POST[$name . "_" . $fieldInfo["name"] . "_value"] as $value) {
-                                                if ($value != ""){
-                                                    $condition[] = "{$m->getDatabase()}.{$fieldInfo["name"]}<>?";
-                                                    $boundData[] = $value;
-                                                }
+                                                if ($value != "")
+                                                    $condition[] = "{$m->getDatabase()}.{$fieldInfo["name"]}<>'" . $m->escape($value) . "'";
                                             }
                                         }
                                         if (count($condition) > 0)
@@ -348,18 +326,14 @@ class XmlDefinedReportController extends ReportController {
                             if ($_POST[$name . "_" . $fieldInfo["name"] . "_value"] != "") {
                                 if ($_POST[$name . "_" . $fieldInfo["name"] . "_option"] == "IS_ANY_OF") {
                                     foreach ($_POST[$name . "_" . $fieldInfo["name"] . "_value"] as $value) {
-                                        if ($value != ""){
-                                            $condition[] = "{$model->getDatabase()}.{$fieldInfo["name"]} = ?";
-                                            $boundData[] = $value;
-                                        }
+                                        if ($value != "")
+                                            $condition[] = "{$model->getDatabase()}.{$fieldInfo["name"]}='" . $model->escape($value) . "'";
                                     }
                                 }
                                 else if ($_POST[$name . "_" . $fieldInfo["name"] . "_option"] == "IS_NONE_OF") {
                                     foreach ($_POST[$name . "_" . $fieldInfo["name"] . "_value"] as $value) {
-                                        if ($value != ""){
-                                            $condition[] = "{$model->getDatabase()}.{$fieldInfo["name"]} <> ?";
-                                            $boundData[] = $value;
-                                        }
+                                        if ($value != "")
+                                            $condition[] = "{$model->getDatabase()}.{$fieldInfo["name"]}<>'" . $model->escape($value) . "'";
                                     }
                                 }
                                 if (count($condition) > 0)
@@ -382,8 +356,7 @@ class XmlDefinedReportController extends ReportController {
                         "fields" => $fields,
                         "dynamicFields" => $dynamicFields,
                         "dynamicHeaders" => $dynamicHeaders,
-                        "filter" => implode(" AND ", $filters),
-                        "bind" => $boundData,
+                        "conditions" => implode(" AND ", $filters),
                         "report" => $report,
                         "headers" => $tableHeaders,
                         "dont_join" => array()
@@ -391,20 +364,20 @@ class XmlDefinedReportController extends ReportController {
                     
                     foreach($dontJoins as $pair)
                     {
-                        $params['dont_join'][] = defined('PACKAGE_PATH') ? str_replace('PACKAGE_PATH', PACKAGE_PATH, (string)$pair) : (string)$pair;
+                        $params['dont_join'][] = (string)$pair;
                     }               
 
                     if ($tableConditions != "") {
-                        $params["filter"] = $params['filter'] . ($params['filter'] != '' ? " AND " : '') . "($tableConditions)";
+                        $params["conditions"] = $params['conditions'] . ($params['conditions'] != '' ? " AND " : '') . "($tableConditions)";
                     }
 
                     if ($_POST[$name . "_sorting"] != "") {
                         array_unshift(
                                 $hardCodedSorting, array
                             (
-                                "field" => $_POST[$name . "_sorting"],
-                                "type" => $_POST[$name . "_sorting_direction"]
-                            )
+                            "field" => $_POST[$name . "_sorting"],
+                            "type" => $_POST[$name . "_sorting_direction"]
+                                )
                         );
                     }
 
@@ -703,18 +676,18 @@ class XmlDefinedReportController extends ReportController {
             $container = new FieldSet($table["name"]);
             $container->setId("{$table["name"]}_options");
             $container->add(
-                Element::create("FieldSet", "Filters")->add($filters)->setId("table_{$table['name']}"), Element::create("FieldSet", "Sorting & Limiting")->add(
-                    $sortingField, Element::create("SelectionList", "Direction", "{$table["name"]}.sorting_direction")->addOption("Ascending", "ASC")->addOption("Descending", "DESC"), Element::create('TextField', 'Limit', "{$table['name']}.limit")->setAsNumeric()
-                )->setId("{$table['name']}_sorting_fs"), Element::create("FieldSet", "Grouping")->
-                setId("{$table['name']}_grouping_fs")->
-                add($groupingTable)
+                    Element::create("FieldSet", "Filters")->add($filters)->setId("table_{$table['name']}"), Element::create("FieldSet", "Sorting & Limiting")->add(
+                            $sortingField, Element::create("SelectionList", "Direction", "{$table["name"]}.sorting_direction")->addOption("Ascending", "ASC")->addOption("Descending", "DESC"), Element::create('TextField', 'Limit', "{$table['name']}.limit")->setAsNumeric()
+                    )->setId("{$table['name']}_sorting_fs"), Element::create("FieldSet", "Grouping")->
+                            setId("{$table['name']}_grouping_fs")->
+                            add($groupingTable)
             );
             $sortingField->setName($table["name"] . "_sorting");
             $this->form->add($container);
         }
 
         $this->form->setSubmitValue("Generate");
-        $this->form->addAttribute("action", Application::getLink($this->path . "/generate"));
+        $this->form->addAttribute("action", $this->path . "/generate");
         $this->form->addAttribute("target", "blank");
 
         return $this->form;

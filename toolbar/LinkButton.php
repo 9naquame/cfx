@@ -3,7 +3,7 @@ class LinkButton extends ToolbarButtonItem
 {
     protected $label;
     protected $link;
-    public $linkAttributes;
+    protected $linkAttributes;
 
     public function __construct($label,$link,$icon=null)
     {
@@ -14,8 +14,7 @@ class LinkButton extends ToolbarButtonItem
 
     protected function _render()
     {
-        $tag = strtolower($this->label);
-        return "<div class='icon i$tag'><a id='$tag-tool-link' href='{$this->link}' $this->linkAttributes >{$this->label}</a></div>";
+        return "<div class='icon i".  strtolower($this->label)."'><a href='{$this->link}' $this->linkAttributes >{$this->label}</a></div>";
     }
 
     public function getCssClasses()
@@ -24,5 +23,10 @@ class LinkButton extends ToolbarButtonItem
             "toolbar-linkbutton-".strtolower($this->label),
             "toolbar-toolitem-button"
         );
+    }
+    
+    public function setLinkAttributes($linkAttributes)
+    {
+        $this->linkAttributes = $linkAttributes;
     }
 }

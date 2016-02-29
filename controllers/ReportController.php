@@ -73,15 +73,15 @@ abstract class ReportController extends Controller
      */
     public function getReport()
     {
-        switch(isset($_REQUEST["report_format"])?$_REQUEST["report_format"]:"pdf")
+        switch(isset($_POST["report_format"])?$_POST["report_format"]:"pdf")
         {
             case "pdf":
                 $report = new PDFReport(
-                    isset($_REQUEST["page_orientation"]) ? 
-                        $_REQUEST["page_orientation"] : 
+                    isset($_POST["page_orientation"]) ? 
+                        $_POST["page_orientation"] : 
                         PDFReport::ORIENTATION_LANDSCAPE,
-                    isset($_REQUEST["paper_size"]) ? 
-                        $_REQUEST["paper_size"] :
+                    isset($_POST["paper_size"]) ? 
+                        $_POST["paper_size"] :
                         PDFReport::PAPER_A4
                 );
                 break;
@@ -97,9 +97,6 @@ abstract class ReportController extends Controller
                 break;
             case "doc":
                 $report = new MSWordReport();
-                break;
-            case "json":
-                $report = new JSONReport();
                 break;
         }
         return $report;
@@ -435,7 +432,7 @@ abstract class ReportController extends Controller
             "script"=>$this->script,
             "filters"=>$form->render()
         );
-        return $this->arbitraryTemplate(Application::getWyfHome("controllers/reports.tpl"), $data);
+        return $this->arbitraryTemplate(__DIR__ . "/reports.tpl", $data, true);
     }
 
     /**
@@ -466,7 +463,7 @@ abstract class ReportController extends Controller
             )->setId("report_formats")->addAttribute("style","width:50%")
         );
         $this->form->setSubmitValue("Generate");
-        $this->form->addAttribute("action",Application::getLink($this->path."/generate"));
+        $this->form->addAttribute("action",$this->path."/generate");
         $this->form->addAttribute("target","blank");
     }
 

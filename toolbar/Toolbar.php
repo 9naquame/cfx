@@ -18,6 +18,7 @@ class Toolbar
 
     public function __construct($buttons=array())
     {
+        Application::addStyleSheet("css/toolbar.css", Application::getWyfHome ("toolbar/"));        
         $this->buttons = $buttons;
     }
 
