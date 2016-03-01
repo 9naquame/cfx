@@ -2,8 +2,6 @@
 
 class CfxAuthUsersController extends ModelController
 {
-    private static $permissionsModel;
-    
     public $listFields = array(
         "auth.users.user_id",
         "auth.users.user_name",
@@ -12,12 +10,15 @@ class CfxAuthUsersController extends ModelController
     );
     public $modelName = "auth.users";
 
-    public function __construct()
+    public function setupListView()
     {
-        parent::__construct();
-        $this->table->addOperation('roles', "Add Role(s)");
-        $this->table->addOperation('reset_password', "Reset Password");
-        $this->table->addOperation('disable_user', "Disable User","javascript:wyf.confirmRedirect('Are you sure you want to disable user?','{$this->urlPath}/%path%/%key%')");
+        $this->listView->addOperation('roles', "Add Role(s)");
+        $this->listView->addOperation('reset_password', "Reset Password");
+        $this->listView->addConfirmableOperation(
+            "disable_user", 
+            "Disable User",
+            "Are you sure you want to disable user?"
+        );
     }
 
     public function reset_password($params)

@@ -5,11 +5,11 @@ class CfxAuthRolesController extends ModelController{
 
   public $modelName = "auth.roles";
   
-    public function __construct() {
-        parent::__construct("common.roles");
-        $this->table->addOperation("permissions", "Permissions");
-        //$this->table->addOperation("constraints", "Set Constraints");
+    public function setupListView()
+    {
+        $this->listView->addOperation("permissions", "Permissions");
     }
+            
   
     public function flatenMenu($menu)
     {
