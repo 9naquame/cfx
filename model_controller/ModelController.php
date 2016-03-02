@@ -153,6 +153,7 @@ class ModelController extends Controller
     protected $forceEditOperation = false;
     protected $forceDeleteOperation = false;
     protected $historyModels = array();
+    private $wyfWrapper;
     
     /**
      *
@@ -176,6 +177,7 @@ class ModelController extends Controller
         $this->description = $this->model->description;
         Application::setTitle($this->label);
         $this->_showInMenu = $this->model->showInMenu === "false" ? false : true;
+        $this->wyfWrapper = new WyfWrapper();
     }
     
     public function setRedirectParameters($redirect) 
@@ -193,7 +195,15 @@ class ModelController extends Controller
      */
     protected function setupListView()
     {
-        
+        foreach($this->wyfWrapper->getWyfTable()->getOperations() as $operation)
+        {
+            $this->listView->addOperation($operation['link'], $operation['label'], $operation['action']);
+        }
+    }
+    
+    public function __get($property)
+    {
+        return $this->wyfWrapper->getProperty($property);
     }
     
     /**
@@ -213,7 +223,7 @@ class ModelController extends Controller
             )
         );
         
-        $this->setupListView();
+        $this->setupListView($this->listView);
         return '<div id="table-wrapper">' . $this->listView->render() . '</div>';
     }
 
@@ -345,7 +355,8 @@ class ModelController extends Controller
     {
         $data = $this->model->get(
             array(
-                "conditions"=>$this->model->getKeyField()."='$id'"
+                "filter"=>$this->model->getKeyField()."= ?",
+                'bind' => [$id]
             ),
             SQLDatabaseModel::MODE_ASSOC,
             true,

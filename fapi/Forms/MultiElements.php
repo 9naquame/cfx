@@ -45,12 +45,15 @@ class MultiElements extends Container
     protected $relatedField;
     public $hasRelatedData = true;
 
-    public function __construct($template)
+    public function __construct($template = null)
     {
         parent::__construct();
         MultiElements::$numForms++;
         $this->index = MultiElements::$numForms;
-        $this->setTemplate($template);
+        if($template !== null)
+        {
+            $this->setTemplate($template);
+        }
     }
 
     public function validate()
@@ -73,7 +76,7 @@ class MultiElements extends Container
     {
         if($this->isFormSent())
         {
-            $this->data = array();
+            $this->data = array();        
             $fields = $this->template->getFields();
             foreach($fields as $field)
             {
@@ -103,8 +106,10 @@ class MultiElements extends Container
 
     public function setData($data)
     {
-        //$this->_retrieveData();
-        $this->data = $data[$this->templateName];
+        if(isset($data[$this->templateName]))
+        {
+            $this->data = $data[$this->templateName];
+        }
     }
 
     public function setTemplate($template)

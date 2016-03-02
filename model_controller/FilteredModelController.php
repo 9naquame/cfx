@@ -38,9 +38,8 @@ abstract class FilteredModelController extends ModelController
 
     abstract protected function addListItems();
 
-    protected function setupList()
+    protected function setupListView()
     {
-        parent::setupList();
         $this->selectionList = new SelectionListToolbarItem($this->filterLabel);
         $this->addListItems();
         if($this->filterFieldModel == null)
@@ -51,21 +50,18 @@ abstract class FilteredModelController extends ModelController
         {
             $this->filterFieldModel = Model::load($this->filterFieldModel);
         }
-        $this->selectionList->onchange = "wyf.updateFilter('{$this->table->name}', '{$this->filterFieldModel->database}.{$this->filterField}', this.value)";
-        $this->toolbar->add($this->selectionList);
+        $this->selectionList->onchange = "wyf.updateFilter('defaultTable', '{$this->filterFieldModel->database}.{$this->filterField}', this.value)";
+        $this->listView->getToolbar()->add($this->selectionList);
+        parent::setupListView();
     }
 
     public function getContents()
     {
-        $ret = parent::getContents();
-        if($this->apiMode === false)
-        {
-            $ret .=
-                "<script type='text/javascript'>
-                    wyf.updateFilter('{$this->table->name}', '{$this->filterFieldModel->database}.{$this->filterField}', '{$this->defaultValue}');
-                    {$this->table->name}Search();
-                </script>";
-        }
+        $ret = parent::getContents().
+            "<script type='text/javascript'>
+                wyf.updateFilter('{$this->table->name}', '{$this->filterFieldModel->database}.{$this->filterField}', '{$this->defaultValue}');
+                {$this->table->name}Search();
+            </script>";
         return $ret;
     }
 }

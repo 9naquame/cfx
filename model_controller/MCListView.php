@@ -110,6 +110,16 @@ class MCListView
             $this->toolbar->addLinkButton("Import",$this->urlPath."/import");
         }          
     }
+    
+    public function getToolbar()
+    {
+        return $this->toolbar;
+    }
+    
+    public function getTable()
+    {
+        return $this->table;
+    }
 
     /**
      * Sets up the list that is shown by default when the Model controller is
