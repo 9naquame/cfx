@@ -1,4 +1,28 @@
 <?php
+/*
+ * WYF Framework
+* Copyright (c) 2011 James Ekow Abaka Ainooson
+*
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+    * "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to
+* the following conditions:
+*
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+* LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+* OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+* WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 /**
  * Roles are groups of people with diferent sets of privileges. This class 
  * provides an extension to the ModelController which makes ot possible to edit 
@@ -38,7 +62,7 @@ class SystemRolesController extends ModelController
      * method is called by the application and it performs recursive calls to 
      * the drawPermissions() method.
      * 
-     * @param $params array Passes the role_id through an array.
+     * @param $params Passes the role_id through an array.
      * @return String
      */
     public function permissions($params)
@@ -46,20 +70,19 @@ class SystemRolesController extends ModelController
         if ($_POST["is_sent"] == "yes")
         {
             //Save the permission values
-            $this->permissions = Model::load("system.permissions");
+            $this->permissions = Model::load(".permissions");
             $permissions = $_POST;
             array_pop($permissions);
+            
             foreach($permissions as $permission => $value)
             {
                 $this->permissions->delete(array("filter"=>"role_id = ? AND permission = ?", "bind"=>array($params[0], $permission)));
-                $this->permissions->setData(
-                    array(
-                        "role_id"     => $params[0], 
-                        "permission" => $permission,
-                        "value"         => $value[0],
-                        "module"     => $value[1],
-                    )
-                );
+                $this->permissions->setData(array(
+                    "role_id"     => $params[0], 
+                    "permission" => $permission,
+                    "value"         => $value[0],
+                    "module"     => $value[1],
+                ));
                 $this->permissions->save();
             }
                         
@@ -80,12 +103,12 @@ class SystemRolesController extends ModelController
                 serialize($flatened)     
             );
             
-            User::log("Set permissions");//, $permissions);
+            User::log("Set permissions");
         }
 
         $path = $params;
         array_shift($path);
-        $accum = Application::$prefix . "/system/roles/permissions/{$params[0]}";
+        $accum = "/system/roles/permissions/{$params[0]}";
         $menu = "<a href='$accum'>Permissions</a>";
         
         foreach($path as $section)
@@ -113,12 +136,12 @@ class SystemRolesController extends ModelController
      * method causes ot to go through the menu for the purpose of generating
      * HTML representation of the permissions tree.
      *
-     * @param $menu     array An array containing a list of all the modules for which 
-     *                 	the tree should be generated
+     * @param $menu     An array containing a list of all the modules for which 
+     *                     the tree should be generated
      * 
-     * @param $roleId   integer The id for the role which is currently being processed
-     * @param $level    integer The level of the tree
-     * @return string
+     * @param $roleId     The id for the role which is currently being processed
+     * @param $level     The level of the tree
+     * @return String
      */
     private function drawPermissions($menu, $roleId, $level = 0)
     {
@@ -190,7 +213,7 @@ class SystemRolesController extends ModelController
     private function getPermissionList($path,$prefix)
     {
         $redirected = false;
-        
+                
         if(file_exists($path . "/package_redirect.php"))
         {
             include $path . "/package_redirect.php";
@@ -230,25 +253,31 @@ class SystemRolesController extends ModelController
         
         $list = array();
         while (false !== ($entry = $d->read()))
-        {
+        {    
             if($entry != "." && $entry != ".."  && is_dir("$path/$entry"))
             {
                 if($redirected)
                 {
-                    $urlPath = substr("$originalPath/$entry",strlen($prefix));
+                    $urlPath = substr(
+                        Application::$prefix, 0, 
+                        strlen(Application::$prefix)-1) . 
+                        substr("$originalPath/$entry",strlen($prefix));
                     $modulePath = explode("/", substr(substr("$originalPath/$entry", strlen($prefix)), 1));
                     $module = Controller::load($modulePath, false);
                 }
                 else
                 {
-                    $urlPath = str_replace("//", "/", substr("$path/$entry",strlen($prefix)));
+                    $urlPath = substr(
+                        Application::$prefix, 0, 
+                        strlen(Application::$prefix)-1) . 
+                        substr("$path/$entry",strlen($prefix));
                     $modulePath = explode("/", substr(substr("$path/$entry", strlen($prefix)), 1));
-                    if($modulePath[0] == '') array_shift($modulePath);
                     $module = Controller::load($modulePath, false);
                 }
-                
+                                
                 if($module->showInMenu())
                 {
+                    //$children = $this->getPermissionList("$path/$entry", $prefix);
                     $permissions = $module->getPermissions();
                     $list[] = array(
                         "title"          => ucwords(str_replace("_", " ", $entry)), 
@@ -269,13 +298,12 @@ class SystemRolesController extends ModelController
      * associated role id logs in. In the generation of the menu controllers
      * to which the user has no permissions are ignored.
      *
-     * @param $roleId     	string 		The id of the role for which the menu is being generated
-     * @param $path     	string 		The path of the modules for which the menus is to be
-     *	                     			generated.
-     *
+     * @param $roleId     The id of the role for which the menu is being generated
+     * @param $path     The path of the modules for which the menus is to be
+     *                     generated.
      * @return String
      */
-    private function generateMenus($roleId, $path="app/modules")
+    private function generateMenus($roleId,$path="app/modules")
     {
         $prefix = "app/modules";
         //$d = dir($path);
@@ -315,7 +343,8 @@ class SystemRolesController extends ModelController
                 }
             }
             $d = dir($path);
-        }        
+        }
+        
         
         $list = array();
         
@@ -325,22 +354,24 @@ class SystemRolesController extends ModelController
             // Ignore certain directories
             if ($entry != "." && $entry != ".." && is_dir("$path/$entry"))
             {
+                
                 if($redirected)
                 {
-                    $urlPath = substr("$originalPath/$entry",strlen($prefix));
-                        $modulePath = substr("$originalPath/$entry", strlen($prefix)
-                    );
-                    
-                    $this->permissions->queryResolve = true;
+                    $urlPath = substr(
+                        Application::$prefix, 0, 
+                        strlen(Application::$prefix)-1) . 
+                        substr("$originalPath/$entry",strlen($prefix));
+                    $modulePath = substr("$originalPath/$entry", strlen($prefix));
                     $value = $this->permissions->get(array("conditions"=>"roles.role_id='$roleId' AND module = '{$modulePath}' AND value='1'"));
                     $children = $this->generateMenus($roleId, "$originalPath/$entry");
                 }
                 else
                 {
-                    $urlPath = substr("$path/$entry",strlen($prefix));
-                        $modulePath = substr("$path/$entry", strlen($prefix)
-                    );
-                        
+                    $urlPath = substr(
+                        Application::$prefix, 0, 
+                        strlen(Application::$prefix)-1) . 
+                        substr("$path/$entry",strlen($prefix));
+                    $modulePath = substr("$path/$entry", strlen($prefix));
                     $this->permissions->queryResolve = true;
                     $value = $this->permissions->get(array("conditions"=>"roles.role_id='$roleId' AND module = '{$modulePath}' AND value='1'"));
                     $children = $this->generateMenus($roleId, "$path/$entry");
@@ -366,10 +397,10 @@ class SystemRolesController extends ModelController
                         "children"  => $children,
                         "icon"      => $icon
                     );
-               }
+                }
             }
         }
         array_multisort($list,SORT_ASC);
         return $list;
-    }
+    }    
 }

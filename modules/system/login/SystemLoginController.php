@@ -73,7 +73,7 @@ class SystemLoginController extends Controller
      * @param $form
      * @return unknown_type
      */
-    public static function change_password_callback($data, $errors, $form)
+    public static function change_password_callback($data, $form)
     {
         $home = Application::getLink("/");
         if ($data["password"] == $data["password2"])
@@ -90,7 +90,7 @@ class SystemLoginController extends Controller
         }
         else
         {
-            $errors[] = "Passwords entered do not match";
+            $form->addError("Passwords entered do not match");
         }
         return true;
     }
@@ -110,8 +110,7 @@ class SystemLoginController extends Controller
         $user = Model::load("system.users");
         $userData = $user->get(
             array(
-                "filter" => "user_name=?",
-                "bind" => [$data["username"]]
+                "conditions" => "user_name='{$data["username"]}'"
             ), Model::MODE_ASSOC, false, false);
                 
         if(count($userData) == 0)

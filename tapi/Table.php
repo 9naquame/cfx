@@ -94,9 +94,10 @@ class Table
                 {
                     $rowOperations .=
                         sprintf(
-                            '<a class="tapi-icon tapi-iaction tapi-i'.$operation['link'].' tapi-operation tapi-operation-%s" href="%s">%s</a>',
+                            '<a class="tapi-icon tapi-iaction tapi-i%s tapi-operation tapi-operation-%s" href="%s">%s</a>',
+                            $operation['link'],
                             $operation["link"],
-                            str_replace(array("%key%","%path%"),array($key,$this->prefix.$operation["link"]),$operation["action"]),
+                            str_replace(array("%key%","%path%"),array($key,$operation["link"]),$operation["action"]),
                             $operation["label"]
                         );
                 }
