@@ -110,7 +110,8 @@ class SystemLoginController extends Controller
         $user = Model::load("system.users");
         $userData = $user->get(
             array(
-                "conditions" => "user_name='{$data["username"]}'"
+                "filter" => "user_name=?",
+                'bind' => [$data["username"]]
             ), Model::MODE_ASSOC, false, false);
                 
         if(count($userData) == 0)
