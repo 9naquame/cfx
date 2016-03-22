@@ -77,6 +77,24 @@ define('CACHE_MODELS', $config['cache']['models']);
 define('CACHE_PREFIX', "");
 define('ENABLE_AUDIT_TRAILS', $config['audit_trails']);
 
+
+if(Application::$config['custom_sessions'])
+{
+    $handler = Sessions::getHandler();
+    session_set_save_handler
+    (
+        array($handler, 'open'), 
+        array($handler, 'close'), 
+        array($handler, 'read'), 
+        array($handler, 'write'), 
+        array($handler, 'destroy'), 
+        array($handler, 'gc')
+    );
+    register_shutdown_function('session_write_close');
+}
+
+session_start();
+
 // Load the styleseets and the javascripts
 // Bootstrap the application
 require SOFTWARE_HOME . "app/bootstrap.php"; 
