@@ -62,7 +62,7 @@ class TemplateEngine extends Smarty
     {
         $t = new TemplateEngine();
         $t->assign($data);
-        return @$t->fetch("{$proto}:" . ($proto === 'file' ? "/" . getcwd() . "/" : '') . "$template");
+        return @$t->fetch("{$proto}:" . ($proto === 'file' ? getcwd() . "/" : '') . "$template");
     }
     
     /**
