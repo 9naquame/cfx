@@ -1,6 +1,6 @@
 <?php
 
-class MCDataImporterJob extends ajumamoro\Ajuma
+class MCDataImporterJob extends ajumamoro\Job
 {
     private $fileFields = array();
     private $headers;

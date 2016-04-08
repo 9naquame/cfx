@@ -1,6 +1,6 @@
 <?php
 
-class MCDataExporterJob extends ajumamoro\Ajuma
+class MCDataExporterJob extends ajumamoro\Job
 {
     public function run()
     {
