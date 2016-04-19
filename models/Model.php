@@ -597,7 +597,7 @@ abstract class Model implements ArrayAccess
                 $data = reset($this->get(array('filter' => $key_field['filter'], "bind"=>$key_field['bind'])));
             }
             else{
-                throw new Exception("Use of conditions in queries deprecated");
+                throw new Exception("Use of conditions in queries deprecated. Use filter, bind arrays to delete");
             }
         }
         else
