@@ -7,10 +7,12 @@
 class WyfWrapper
 {
     private $table; 
+    private $toolbar;
     
     public function __construct()
     {
         $this->table = new WyfTable();
+        $this->toolbar = new WyfToolbar();
     }
     
     public function getWyfTable()
@@ -18,12 +20,19 @@ class WyfWrapper
         return $this->table;
     }
     
+    public function getWyfToolbar()
+    {
+        return $this->toolbar;
+    }
+    
     public function getProperty($property)
     {
         switch($property)
         {
             case "table": return $this->table;
-            default: throw new Exception("WYF Wrapper failed to matcch an unknown property [$property] please consider refactoring code.");
+            case "toolbar": return $this->toolbar;
+            default: 
+                throw new Exception("WYF Wrapper failed to match an unknown property [$property] please consider refactoring code.");
         }
     }
 }
@@ -44,5 +53,20 @@ class WyfTable
     public function getOperations()
     {
         return $this->operations;
+    }
+}
+
+class WyfToolbar
+{
+    private $linkButtons = [];
+    
+    public function addLinkButton($label, $link)
+    {
+        $this->linkButtons[] = ['label' => $label, 'link' => $link];
+    }
+    
+    public function getLinkButtons()
+    {
+        return $this->linkButtons;
     }
 }

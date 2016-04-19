@@ -199,11 +199,20 @@ class ModelController extends Controller
         {
             $this->listView->addOperation($operation['link'], $operation['label'], $operation['action']);
         }
+        foreach($this->wyfWrapper->getWyfToolbar()->getLinkButtons() as $linkButton)
+        {
+            $this->listView->getToolbar()->addLinkButton($linkButton['label'], $linkButton['link']);
+        }
     }
     
     public function __get($property)
     {
-        return $this->wyfWrapper->getProperty($property);
+        try{
+            return $this->wyfWrapper->getProperty($property);            
+        } catch (Exception $ex) {
+            $class = (new ReflectionClass($this))->getName();
+            throw new Exception($ex->getMessage(). " method was accessed from [$class]");
+        }
     }
     
     /**

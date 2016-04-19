@@ -50,7 +50,6 @@ class AuthMenu
     private static function generateMenus($roleId, $path = "app/modules")
     {
         $prefix = "app/modules";
-        //$d = dir($path);
 
         if (file_exists($path . "/package_redirect.php")) {
             include $path . "/package_redirect.php";
@@ -96,11 +95,11 @@ class AuthMenu
                         substr("$originalPath/$entry", strlen($prefix));
                     $modulePath = substr("$originalPath/$entry", strlen($prefix));
                     $value = self::$permissionsModel->get(
-                            array(
-                                "filter"     => "roles.role_id= ? AND module = ? AND value= ?",
-                                "bind"       => [$roleId, $modulePath, 1]       
-                                )
-                            );
+                        array(
+                            "filter"     => "roles.role_id= ? AND module = ? AND value= ?",
+                            "bind"       => [$roleId, $modulePath, 1]       
+                        )
+                    );
                     $children = self::generateMenus($roleId, "$originalPath/$entry");
                 } else {
                     $urlPath = substr(

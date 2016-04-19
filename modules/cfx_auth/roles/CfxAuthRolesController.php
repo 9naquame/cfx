@@ -3,7 +3,9 @@
 
 class CfxAuthRolesController extends ModelController{
 
-  public $modelName = "auth.roles";
+    public $modelName = "auth.roles";
+    private $id;
+    private $save;
   
     public function setupListView()
     {
@@ -55,25 +57,6 @@ class CfxAuthRolesController extends ModelController{
                 ));
                 $this->permissions->save();
             }
-                        
-            //Generate a new side menu for this role
-            $menu = $this->generateMenus($params[0]);
-            $flatened = $this->flatenMenu($menu);
-            $sideMenu = Controller::load( array(
-                "auth", "side_menu", "generate", serialize($menu)
-            ));
-            
-            file_put_contents(
-                "app/cache/menus/side_menu_{$params[0]}.html",
-                $sideMenu->content
-            );
-            
-            file_put_contents(
-                "app/cache/menus/menu_{$params[0]}.object",
-                serialize($flatened)     
-            );
-            
-            User::log("Set permissions");
         }
 
         $path = $params;
@@ -260,129 +243,7 @@ class CfxAuthRolesController extends ModelController{
         }
         array_multisort($list, SORT_ASC);
         return $list;
-    }
-
-    /**
-     * This recursive method is called to generate the HTML representation of
-     * the cached menu that is shown in the menu pane whenever anyone with the
-     * associated role id logs in. In the generation of the menu controllers
-     * to which the user has no permissions are ignored.
-     *
-     * @param $roleId     The id of the role for which the menu is being generated
-     * @param $path     The path of the modules for which the menus is to be
-     *                     generated.
-     * @return String
-     */
-    private function generateMenus($roleId,$path="app/modules")
-    {
-        $prefix = "app/modules";
-        //$d = dir($path);
-        
-        if(file_exists($path . "/package_redirect.php"))
-        {
-            include $path . "/package_redirect.php";
-            $originalPath = $path;
-            $path = $redirect_path; 
-            $d = dir($path);
-            $redirected = true;
-            $redirects = Cache::get("permission_redirects");
-            if($redirects == null)
-            {
-                $redirects = array();   
-            }
-            $redirects[] = array(
-                "from"  =>  $originalPath,
-                "to"    =>  $path
-            );
-            Cache::add("permission_redirects", $redirects);
-        }
-        else
-        {
-            $redirects = Cache::get("permission_redirects");
-            if(is_array($redirects))
-            {
-                foreach($redirects as $redirect)
-                {
-                    if(substr_count($path, $redirect["from"]) > 0)
-                    { 
-                        $redirected = true;
-                        $originalPath = $path;
-                        $path = str_replace($redirect["from"], $redirect["to"], $path);
-                        break;
-                    }
-                }
-            }
-            $d = dir($path);
-        }
-        
-        
-        $list = array();
-        
-        // Go through every file in the module directory
-        while (false !== ($entry = $d->read()))
-        {
-            // Ignore certain directories
-            if ($entry != "." && $entry != ".." && is_dir("$path/$entry"))
-            {
-                
-                if($redirected)
-                {
-                    $urlPath = substr(
-                        Application::$prefix, 0, 
-                        strlen(Application::$prefix)-1) . 
-                        substr("$originalPath/$entry",strlen($prefix));
-                    $modulePath = substr("$originalPath/$entry", strlen($prefix));
-                    $value = $this->permissions->get(
-                            array(
-                                "filter"    => "roles.role_id= ? AND module = ? AND value=?",
-                                "bind"      => [$roleId,$modulePath,1]
-                                )
-                            );
-                    $children = $this->generateMenus($roleId, "$originalPath/$entry");
-                }
-                else
-                {
-                    $urlPath = substr(
-                        Application::$prefix, 0, 
-                        strlen(Application::$prefix)-1) . 
-                        substr("$path/$entry",strlen($prefix));
-                    $modulePath = substr("$path/$entry", strlen($prefix));
-                    $this->permissions->queryResolve = true;
-                    $value = $this->permissions->get(
-                            array(
-                                "filter"=>"roles.role_id= ? AND module = ? AND value=?",
-                                "bind"  => [$roleId,$modulePath, 1]
-                                )
-                            );
-                    $children = $this->generateMenus($roleId, "$path/$entry");
-                }
-                
-                if(file_exists("app/modules/" . $modulePath . "/package.xml"))
-                {
-                    $xml = simplexml_load_file("app/modules/" . $modulePath . "/package.xml");
-                    $label = (string)reset($xml->xpath("/package:package/package:label"));
-                    $icon = (string)reset($xml->xpath("/package:package/package:icon"));
-                }
-                else
-                {
-                    $label = "";
-                    $icon = "";
-                }
-                
-                if(count($children)>0 || count($value)>0)
-                {
-                    $list[] = array(
-                        "title"        => $label==''?ucwords(str_replace("_", " ", $entry)):$label,
-                        "path"      => $urlPath,
-                        "children"  => $children,
-                        "icon"      => $icon
-                    );
-                }
-            }
-        }
-        array_multisort($list,SORT_ASC);
-        return $list;
-    }   
+    } 
 
     public function constraints($params)
     {
