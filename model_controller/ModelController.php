@@ -410,7 +410,8 @@ class ModelController extends Controller
         $form->setShowField(false);
         $data = $this->model->get(
             array(
-                "conditions"=>$this->model->getKeyField()."='".$params[0]."'"
+                "filter" => $this->model->getKeyField()."=?",
+                "bind" => [$params[0]]
             ),
             SQLDatabaseModel::MODE_ASSOC,
             true,
@@ -533,13 +534,13 @@ class ModelController extends Controller
                     'system.users.last_name',
                     'system.users.other_names'
                 ),
-                'conditions' => "item_id = '{$params[0]}' AND item_type in ('$models')",
+                'filter' => "item_id = ? AND item_type in (?)",
+                'bind' => [$params[0],$models],
                 'sort_field' => 'audit_trail_id DESC'
             )
         );
         $table->useAjax = true;
         return $table->render();
-        
     }
     
     public function bulkdelete()
@@ -582,8 +583,8 @@ class ModelController extends Controller
             array("label"=>"Can export {$this->label}", "name"=> $this->permissionPrefix . "_can_export"),
             array("label"=>"Can import {$this->label}", "name"=> $this->permissionPrefix . "_can_import"),
             array("label"=>"Can view audit trail for {$this->label}", "name"=> $this->permissionPrefix . "_can_audit"),
-            array("label"=>"Can view notes for {$this->label}", "name"=> $this->permissionPrefix . "_can_view_notes"),
-            array("label"=>"Can create notes for {$this->label}", "name"=> $this->permissionPrefix . "_can_create_notes"),
+            //array("label"=>"Can view notes for {$this->label}", "name"=> $this->permissionPrefix . "_can_view_notes"),
+            //array("label"=>"Can create notes for {$this->label}", "name"=> $this->permissionPrefix . "_can_create_notes"),
         );
     }
     

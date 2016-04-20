@@ -69,11 +69,8 @@ class MCNotesManager
                     'system.users.first_name',
                     'system.users.last_name'
                 ),
-                'conditions' => Model::condition(array(
-                        'item_type' => $this->model->package,
-                        'item_id' => $params[0]
-                    )
-                )
+                'filter' => 'item_type = ? and item_id = ?',
+                'bind' => [$this->model->package, $params[0]]
             )
         );
         

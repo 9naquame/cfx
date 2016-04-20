@@ -146,10 +146,10 @@ class MCListView
             $this->table->addOperation("audit","History");
         }          
         
-        if(User::getPermission($this->permissionPrefix."_can_view_notes"))
+        /*if(User::getPermission($this->permissionPrefix."_can_view_notes"))
         {
             $this->table->addOperation("notes","Notes");
-        }          
+        } */         
     }
     
     private function getDefaultFieldNames()
