@@ -457,7 +457,7 @@ class ModelController extends Controller
         $form->setSubmitValue('Import Data');
 
         return $this->arbitraryTemplate(
-            Application::getWyfHome('utils/model_controller/templates/import.tpl'), 
+            Application::getWyfHome('model_controller/import.tpl'), 
             array(
                 'form' => $form->render(),
                 'template' => "{$this->path}/export/csv?template=yes"
