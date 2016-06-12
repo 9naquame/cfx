@@ -143,7 +143,9 @@ class PDFReport extends Report
                 break;  
             
             case "logo":
-                $this->pdf->image($content->image,null,null,8,8);
+                if(file_exists($content->image)) {
+                    $this->pdf->image($content->image,null,null,8,8);
+                }
                 $this->pdf->sety($this->pdf->getY() - 8);
                 $this->pdf->SetFont("Times","B","18");
                 $this->pdf->cell(9);$this->pdf->cell(0,8,$content->title);
