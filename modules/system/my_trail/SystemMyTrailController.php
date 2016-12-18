@@ -19,7 +19,8 @@ class SystemMyTrailController extends Controller
                     'system.audit_trail.description',
                     'system.audit_trail.item_type'
                 ),
-                'conditions' => "user_id = '{$_SESSION['user_id']}'",
+                'filter' => "user_id = ?",
+                'bind' => [$_SESSION['user_id']],
                 'sort_field' => 'audit_trail_id DESC'
             )
         );
