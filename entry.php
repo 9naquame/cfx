@@ -155,7 +155,7 @@ if($_SESSION['logged_in'] == true && ($_GET['q']!='system/api/table') && ENABLE_
 
 if(!isset($fapiStyleSheet))
 {
-    Application::preAddStylesheet("css/fapi.css", "vendor/ekowabaka/cfx/fapi/");
+    Application::preAddStylesheet("css/fapi.css", "vendor/9naquame/cfx/fapi/");
 }
 else
 {
