@@ -39,7 +39,7 @@ class Tab extends Container
     //! Returns whether this Tab is selected.
     public function getSelected()
     {
-        return $selected;
+        return $this->selected;
     }
 
     //! Sets the selected status of the Tab.
