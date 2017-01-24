@@ -44,6 +44,11 @@ class Postgresql extends SQLDBDataStore
             $conditions = "(" . ( $conditions == "" ? "":$conditions . ") AND ("). $this->fixedConditions . ")";
         }
         
+        if(isset($params["hardConditions"]))
+        {
+            $conditions = "(" . ( $conditions == "" ? "":$conditions . ") AND ("). $params["hardConditions"] . ")";
+        }
+        
         $bindData = $params['bind'];
         $rows = array();
         $sorting = null;
@@ -486,6 +491,7 @@ class Postgresql extends SQLDBDataStore
         {
             $query .= " WHERE (" . implode(" AND ",$joinConditions) . ") ";
             $query .= (strlen($params["conditions"])>0?" AND (".$params["conditions"].")":"");
+            $query .= (strlen($params["hardConditions"])>0?" AND (".$params["hardConditions"].")":"");
         }
         else
         {
