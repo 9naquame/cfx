@@ -103,12 +103,15 @@ class CfxAuthUsersController extends ModelController
 
     public static function roles_callback($data, $form)
     {
+        $post = $_POST;
+        unset($post['is_form_sent']);
+        
+        $data = $post;
         $usersRolesModel = Model::load("auth.users_roles");
         
         $usersRolesModel->datastore->beginTransaction();
 
         $userId = array_pop($data);
-
         $loggedInUsersRoles = $usersRolesModel->getWithField("user_id", $_SESSION['user_id']);
 
         //this is for hackers who try to use scripts of a kind to bypass the UI..this throws an exception to prevent
