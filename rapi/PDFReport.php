@@ -144,7 +144,7 @@ class PDFReport extends Report
             
             case "logo":
                 if(file_exists($content->image)) {
-                    $this->pdf->image($content->image,null,null,8,8);
+                    $this->pdf->image($content->image, $content->x, $content->y, $content->width, $content->height);
                 }
                 $this->pdf->sety($this->pdf->getY() - 8);
                 $this->pdf->SetFont("Times","B","18");
