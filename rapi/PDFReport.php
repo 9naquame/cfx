@@ -143,7 +143,11 @@ class PDFReport extends Report
                 break;  
             
             case "logo":
-                if(file_exists($content->image)) {
+                if(file_exists($content->image) && !$content->center) {
+                    $this->pdf->image($content->image, $content->x, $content->y, $content->width, $content->height);
+                }
+                if(file_exists($content->image) && $content->center) {
+                    $content->x = $this->pdf->twidth / 2 - $content->width / 2;
                     $this->pdf->image($content->image, $content->x, $content->y, $content->width, $content->height);
                 }
                 $this->pdf->sety($this->pdf->getY() - 8);
