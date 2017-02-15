@@ -87,7 +87,7 @@ class Grid extends Field
         $gauge .= "</tr>";
         $ret .= "</tr></table>";
 
-        $ret .= "<div class='fapi-grid'><table width='100%'><tbody>$gauge";
+        $ret .= "<div id='{$this->hash}-data' class='fapi-grid'><table width='100%'><tbody>";
         for($i = 0; $i < $this->numRows; $i++)
         {
             $ret .= "<tr><td  class='fapi-grid-header'><center>" . ($i + 1) . "</center></td>";

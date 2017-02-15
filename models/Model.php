@@ -804,6 +804,7 @@ abstract class Model implements ArrayAccess
 
     public function validatorNumeric($name,$parameters)
     {
+        $this->datastore->data[$name] = str_replace(',', '', $this->datastore->data[$name]);
         if(is_numeric($this->datastore->data[$name]) || $this->datastore->data[$name] === '' || $this->datastore->data[$name] === null)
         {
             return true;
