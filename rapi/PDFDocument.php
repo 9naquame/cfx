@@ -248,6 +248,10 @@ class PDFDocument extends fpdf\FPDF_EXTENDED
                 {
                     $totals[$i] = number_format($totals[$i], 0, ".", ",");
                 }
+                else
+                {
+                    $totals[$i] = null;
+                }
             }
             else
             {
