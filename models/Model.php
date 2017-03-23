@@ -436,6 +436,7 @@ abstract class Model implements ArrayAccess
     public function save()
     {
         // Force validations to run
+        $datum = $this->datastore->data;
         if($this->validationPassed === false)
         {
             $validated = $this->validate();
@@ -443,42 +444,52 @@ abstract class Model implements ArrayAccess
                 throw new ModelException("Failed to validate the model [{$this->package}] " . json_encode($validated), $validated);
             }
         }
+        $check = array_values($datum);
+        $entries = is_array($check[0]) ? $datum : [$datum];
         
         $this->datastore->beginTransaction();
         $this->preAddHook();
         
-        if(array_search("entry_date", array_keys($this->fields)) && $this->datastore->data["entry_date"] == "")
+        foreach ($entries as $data)
         {
-            $this->datastore->data["entry_date"] = time();
-        }
-        
-        $this->datastore->setData($this->datastore->data, $this->fields);
-        $id = $this->saveImplementation();
-        $this->postAddHook($id, $this->getData());
-        
-        if(isset(self::$callbacks[$this->package]['postAdd'])) {
-            $closure = self::$callbacks[$this->package]['postAdd'];
-            $closure($id, $this->getData());
-        }
-        
-        if($this->package != 'system.audit_trail' && $this->package != 'system.audit_trail_data')
-        {
-            if($id === null)
+            if($data == null) 
             {
-                $id = $this->datastore->data[$this->getKeyField()];
+                continue;
             }
             
-            if(ENABLE_AUDIT_TRAILS === true && $this->disableAuditTrails === false)
+            if(array_search("entry_date", array_keys($this->fields)) && $data["entry_date"] == "")
             {
-                @SystemAuditTrailModel::log(
-                    array(
-                        'item_id' => $id,
-                        'item_type' => $this->package,
-                        'description' => 'Added item',
-                        'type' => SystemAuditTrailModel::AUDIT_TYPE_ADDED_DATA,
-                        'data' => json_encode($this->datastore->data)
-                    )
-                );
+                $data["entry_date"] = time();
+            }
+
+            $this->datastore->setData($data, $this->fields);
+            $id = $this->saveImplementation();
+            $this->postAddHook($id, $this->getData());
+
+            if(isset(self::$callbacks[$this->package]['postAdd'])) {
+                $closure = self::$callbacks[$this->package]['postAdd'];
+                $closure($id, $this->getData());
+            }
+        
+            if($this->package != 'system.audit_trail' && $this->package != 'system.audit_trail_data')
+            {
+                if($id === null)
+                {
+                    $id = $data[$this->getKeyField()];
+                }
+
+                if(ENABLE_AUDIT_TRAILS === true && $this->disableAuditTrails === false)
+                {
+                    @SystemAuditTrailModel::log(
+                        array(
+                            'item_id' => $id,
+                            'item_type' => $this->package,
+                            'description' => 'Added item',
+                            'type' => SystemAuditTrailModel::AUDIT_TYPE_ADDED_DATA,
+                            'data' => json_encode($data)
+                        )
+                    );
+                }
             }
         }
         
