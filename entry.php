@@ -139,7 +139,7 @@ if($_SESSION['logged_in'] == true && ($_GET['q']!='system/api/table') && ENABLE_
         )
     );
 
-    if(class_exists("SystemAuditTrailModel", false) && ENABLE_ROUTING_TRAILS === true)
+    if(class_exists("SystemAuditTrailModel") && ENABLE_ROUTING_TRAILS === true)
     {
         SystemAuditTrailModel::log(
             array(
