@@ -37,6 +37,6 @@
         "models/datastores/databases/postgresql",
         "cache/",
         "testlib",
-        "modules"
+        "modules/system/audit_trail"
     ]
 }

@@ -1,5 +1,5 @@
 <?php
 class SystemAuditTrailDataModel extends ORMSQLDatabaseModel
 {
-    public $database = "common.audit_trail_data";
+    public $database = "system.audit_trail_data";
 }
