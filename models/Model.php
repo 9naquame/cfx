@@ -435,8 +435,6 @@ abstract class Model implements ArrayAccess
 
     public function save()
     {
-        // Force validations to run
-        $datum = $this->datastore->data;
         if($this->validationPassed === false)
         {
             $validated = $this->validate();
@@ -444,8 +442,43 @@ abstract class Model implements ArrayAccess
                 throw new ModelException("Failed to validate the model [{$this->package}] " . json_encode($validated), $validated);
             }
         }
-        $check = array_values($datum);
-        $entries = is_array($check[0]) ? $datum : [$datum];
+        
+        $data = $this->datastore->data;
+        $check = array_values($data);
+        
+        if (is_array($check[0]))
+        {
+            return $this->saveMulti();
+        }
+        
+        // Force validations to run
+        
+        $this->datastore->beginTransaction();
+        $this->preAddHook();
+        
+        if(array_search("entry_date", array_keys($this->fields)) && $this->datastore->data["entry_date"] == "")
+        {
+            $this->datastore->data["entry_date"] = time();
+        }
+        
+        $this->datastore->setData($this->datastore->data, $this->fields);
+        $id = $this->saveImplementation();
+        $this->postAddHook($id, $this->getData());
+        
+        if(isset(self::$callbacks[$this->package]['postAdd'])) {
+            $closure = self::$callbacks[$this->package]['postAdd'];
+            $closure($id, $this->getData());
+        }
+        $this->saveAudit($id);
+        $this->datastore->endTransaction();
+        $this->postCommitHook($id, $this->getData());
+        
+        return $id;
+    }
+    
+    public function saveMulti()
+    {
+        $entries = $this->datastore->data;
         
         $this->datastore->beginTransaction();
         $this->preAddHook();
@@ -470,36 +503,38 @@ abstract class Model implements ArrayAccess
                 $closure = self::$callbacks[$this->package]['postAdd'];
                 $closure($id, $this->getData());
             }
-        
-            if($this->package != 'system.audit_trail' && $this->package != 'system.audit_trail_data')
-            {
-                if($id === null)
-                {
-                    $id = $data[$this->getKeyField()];
-                }
-
-                if(ENABLE_AUDIT_TRAILS === true && $this->disableAuditTrails === false)
-                {
-                    @SystemAuditTrailModel::log(
-                        array(
-                            'item_id' => $id,
-                            'item_type' => $this->package,
-                            'description' => 'Added item',
-                            'type' => SystemAuditTrailModel::AUDIT_TYPE_ADDED_DATA,
-                            'data' => json_encode($data)
-                        )
-                    );
-                }
-            }
+            $this->saveAudit($id);
+            $this->datastore->endTransaction();
         }
         
         $this->datastore->endTransaction();
-        $this->postCommitHook($id, $this->getData());
-        
-        return $id;
     }
     
-    protected function saveImplementation()
+    public function saveAudit($id)
+    {
+        if($this->package != 'system.audit_trail' && $this->package != 'system.audit_trail_data')
+        {
+            if($id === null)
+            {
+                $id = $this->datastore->data[$this->getKeyField()];
+            }
+            
+            if(ENABLE_AUDIT_TRAILS === true && $this->disableAuditTrails === false)
+            {
+                @SystemAuditTrailModel::log(
+                    array(
+                        'item_id' => $id,
+                        'item_type' => $this->package,
+                        'description' => 'Added item',
+                        'type' => SystemAuditTrailModel::AUDIT_TYPE_ADDED_DATA,
+                        'data' => json_encode($this->datastore->data)
+                    )
+                );
+            }
+        }
+    }
+
+        protected function saveImplementation()
     {
         return $this->datastore->save();
     }
@@ -873,4 +908,3 @@ class ModelException extends Exception{
         $this->object = $object;
     }
 }
-
