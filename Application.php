@@ -420,6 +420,7 @@ class Application
     
     public static function log($channel = 'default') 
     {
+        chdir(SOFTWARE_HOME);
         if(!isset(self::$loggers[$channel]))
         {
             self::$loggers[$channel] = new Logger($channel);
