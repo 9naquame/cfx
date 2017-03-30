@@ -15,7 +15,7 @@ class Utils
      */
     public static function currency($number)
     {
-        return number_format(Common::round($number,2),2,'.',',');
+        return number_format(Utils::round($number,2),2,'.',',');
     }
 
     public static function deCommalize($number)
@@ -61,7 +61,7 @@ class Utils
      */
     public static function stringToDatabaseDate($string, $hasTime = false)
     {
-        $timestamp = Common::stringToTime($string, $hasTime);
+        $timestamp = Utils::stringToTime($string, $hasTime);
         return date("Y-m-d", $timestamp);
     }
 
@@ -79,7 +79,7 @@ class Utils
         $wholePart = $numbers[0];
         //$fractionPart = round($numbers[1]/pow(10,strlen($numbers[1]))*100);
         $fractionPart = round(bcmul(bcdiv($numbers[1], bcpow(10, strlen($numbers[1]))), 100));//$numbers[1]/pow(10,strlen($numbers[1]))*100);
-        return ucwords(Common::convert_number($wholePart) . " Ghana Cedis, " . Common::convert_number($fractionPart) . " Pesewas");
+        return ucwords(Utils::convert_number($wholePart) . " Ghana Cedis, " . Utils::convert_number($fractionPart) . " Pesewas");
     }
     
     /**
@@ -115,24 +115,24 @@ class Utils
 
         if ($Bn)
         {
-            $res .= Common::convert_number($Bn) . " Billion";
+            $res .= Utils::convert_number($Bn) . " Billion";
         }
 
         if ($Gn)
         {
-            $res .= Common::convert_number($Gn) . " Million";
+            $res .= Utils::convert_number($Gn) . " Million";
         }
 
         if ($kn)
         {
             $res .= (empty($res) ? "" : " ") .
-            Common::convert_number($kn) . " Thousand";
+            Utils::convert_number($kn) . " Thousand";
         }
 
         if ($Hn)
         {
             $res .= (empty($res) ? "" : " ") .
-            Common::convert_number($Hn) . " Hundred";
+            Utils::convert_number($Hn) . " Hundred";
         }
 
         $ones = array("", "One", "Two", "Three", "Four", "Five", "Six",
@@ -181,7 +181,7 @@ class Utils
     public static function isWorkingDay($date = null)
     {
     	$date = $date === null ? time() : $date;
-    	if(Common::isWeekend($date))
+    	if(Utils::isWeekend($date))
     	{
     		return false;
     	}
@@ -201,7 +201,7 @@ class Utils
     public static function getNextWorkingDay($numberOfDays,$date=null, $previous = false)
     {
         $nextWorkingDay = 0;
-        if($date==null) $date = strtotime(date("Y-m-d", Common::time()));
+        if($date==null) $date = strtotime(date("Y-m-d", Utils::time()));
         $holidaysModel = Model::load("system.holidays");
         $holidaysModel->queryResolve = false;
         $holidays = $holidaysModel->get();
