@@ -428,11 +428,12 @@ class XmlDefinedReportController extends ReportController {
                         //$reportGroupingFields = array_reverse($reportGroupingFields);
                         $hardCodedSorting = array_merge($reportGroupingFields, $hardCodedSorting);
                     }
-
+                    
                     $params["sort_field"] = $hardCodedSorting;
                     if ($_POST[$name . "_limit"] != '') {
                         $params['limit'] = $_POST[$name . "_limit"];
                     }
+                    
                     $params["no_num_formatting"] = true;
                     $params = $this->paramsCallback($params);
                     $this->reportData = ReportController::getReportData($params, SQLDatabaseModel::MODE_ARRAY);
@@ -571,8 +572,9 @@ class XmlDefinedReportController extends ReportController {
                     $fieldInfo = $fieldInfo[0];
                     $fields[$key] = (string) $field;
 
-                    $sortingField->addOption(str_replace("\\n", " ", $fieldInfo["label"]), $model->getDatabase() . "." . $fieldInfo["name"]);
-                    $grouping1->addOption(str_replace("\\n", " ", $field["label"]), (string) $field);
+                    $type = $field['type'] ? "::{$field['type']}" : "";
+                    $sortingField->addOption(str_replace("\\n", " ", $field["label"]), $model->getDatabase() . "." . $fieldInfo["name"].$type);
+                    $grouping1->addOption(str_replace("\\n", " ", $field["label"]), (string) $field.$type);
 
                     if (array_search($model->getKeyField(), $this->referencedFields) === false || $fieldInfo["type"] == "double" || $fieldInfo["type"] == "date") {
                         switch ($fieldInfo["type"]) {
@@ -657,7 +659,7 @@ class XmlDefinedReportController extends ReportController {
                                 ->add(Element::create("Checkbox", "", "{$table["name"]}.{$fieldInfo["name"]}_ignore", "", "1"), $i, 4);
                     }
                 } else {
-                    $grouping1->addOption(str_replace("\\n", " ", $field["label"]), $field);
+                    $grouping1->addOption(str_replace("\\n", " ", $field["label"]), $field.$type);
                     $filters
                             ->add(Element::create("Label", str_replace("\\n", " ", (string) $field["label"])), $i, 0)
                             ->add(Element::create("SelectionList", "", "{$table["name"]}_concat_{$numConcatFields}_option")

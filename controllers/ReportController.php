@@ -334,7 +334,8 @@ abstract class ReportController extends Controller
      */
     protected function generateTable(&$params)
     {
-        $groupingField = array_search($params["grouping_fields"][$params["grouping_level"]],$params["fields"]);
+        $explode = explode('::', $params["grouping_fields"][$params["grouping_level"]]);
+        $groupingField = array_search($explode[0],$params["fields"]);
         $groupingLevel = $params["grouping_level"];
         $accumulatedTotals = array();
         
