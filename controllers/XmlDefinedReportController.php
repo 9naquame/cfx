@@ -399,16 +399,6 @@ class XmlDefinedReportController extends ReportController {
                         $params["filter"] = $params['filter'] . ($params['filter'] != '' ? " AND " : '') . "($tableConditions)";
                     }
 
-                    if ($_POST[$name . "_sorting"] != "") {
-                        array_unshift(
-                                $hardCodedSorting, array
-                            (
-                                "field" => $_POST[$name . "_sorting"],
-                                "type" => $_POST[$name . "_sorting_direction"]
-                            )
-                        );
-                    }
-
                     if (is_array($_POST[$name . "_grouping"])) {
                         foreach ($_POST[$name . "_grouping"] as $postGrouping) {
                             if ($postGrouping != "") {
@@ -426,7 +416,18 @@ class XmlDefinedReportController extends ReportController {
                             }
                         }
                         //$reportGroupingFields = array_reverse($reportGroupingFields);
-                        $hardCodedSorting = array_merge($reportGroupingFields, $hardCodedSorting);
+                        if ($_POST[$name . "_sorting"] != "") {
+                            $hardCodedSorting = [];
+                            $hardCodedSorting[] = [
+                                "field" => $_POST[$name . "_sorting"],
+                                "type" => $_POST[$name . "_sorting_direction"]
+                            ];
+                            $hardCodedSorting = array_merge($reportGroupingFields, $hardCodedSorting);
+                        }
+                        
+                        else {
+                            $hardCodedSorting = array_merge($hardCodedSorting, $reportGroupingFields);
+                        }
                     }
                     
                     $params["sort_field"] = $hardCodedSorting;
@@ -573,9 +574,13 @@ class XmlDefinedReportController extends ReportController {
                     $fields[$key] = (string) $field;
 
                     $type = $field['type'] ? "::{$field['type']}" : "";
-                    $sortingField->addOption(str_replace("\\n", " ", $field["label"]), $model->getDatabase() . "." . $fieldInfo["name"].$type);
-                    $grouping1->addOption(str_replace("\\n", " ", $field["label"]), (string) $field.$type);
-
+                    
+                    if(!$field['hide'])
+                    {
+                        $sortingField->addOption(str_replace("\\n", " ", $field["label"]), $model->getDatabase() . "." . $fieldInfo["name"].$type);
+                        $grouping1->addOption(str_replace("\\n", " ", $field["label"]), (string) $field.$type);
+                    }
+                    
                     if (array_search($model->getKeyField(), $this->referencedFields) === false || $fieldInfo["type"] == "double" || $fieldInfo["type"] == "date") {
                         switch ($fieldInfo["type"]) {
                             case "integer":
@@ -659,7 +664,10 @@ class XmlDefinedReportController extends ReportController {
                                 ->add(Element::create("Checkbox", "", "{$table["name"]}.{$fieldInfo["name"]}_ignore", "", "1"), $i, 4);
                     }
                 } else {
-                    $grouping1->addOption(str_replace("\\n", " ", $field["label"]), $field.$type);
+                    if(!$field['hide'])
+                    {
+                        $grouping1->addOption(str_replace("\\n", " ", $field["label"]), $field.$type);
+                    }
                     $filters
                             ->add(Element::create("Label", str_replace("\\n", " ", (string) $field["label"])), $i, 0)
                             ->add(Element::create("SelectionList", "", "{$table["name"]}_concat_{$numConcatFields}_option")
