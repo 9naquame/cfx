@@ -172,7 +172,8 @@ class XmlDefinedReportController extends ReportController {
                         }
 
                         if (isset($field["sort"])) {
-                            $sortField = "{$model->database}.{$fieldInfo["name"]}";
+                            $type = $field['type'] ? "::{$field['type']}" : "";
+                            $sortField = "{$model->database}.{$fieldInfo["name"]}".$type;
                             $hardCodedSorting[] = array("field" => $sortField, "type" => (string)$field["sort"]);
                         }
 
