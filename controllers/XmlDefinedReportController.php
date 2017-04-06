@@ -284,23 +284,23 @@ class XmlDefinedReportController extends ReportController {
                                             case "EQUALS":
                                                 $filterSummaries[] = "{$headers[$key]} on {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]}";
                                                 $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} = ?";
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
+                                                $boundData[] = Utils::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
                                                 break;
                                             case "GREATER":
                                                 $filterSummaries[] = "{$headers[$key]} after {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]}";
                                                 $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} > ?"; 
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
+                                                $boundData[] = Utils::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
                                                 break;
                                             case "LESS":
                                                 $filterSummaries[] = "{$headers[$key]} before {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]}";
-                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} < ?'";
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
+                                                $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} < ?";
+                                                $boundData[] = Utils::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
                                                 break;
                                             case "BETWEEN":
                                                 $filterSummaries[] = "{$headers[$key]} from {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]} to {$_POST[$name . "_" . $fieldInfo["name"] . "_end_date"]}";
                                                 $filters[] = "({$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} >= ? AND {$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}<=?)";
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
-                                                $boundData[] = Common::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_end_date"]);
+                                                $boundData[] = Utils::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]);
+                                                $boundData[] = Utils::stringToDatabaseDate($_POST[$name . "_" . $fieldInfo["name"] . "_end_date"]);
                                                 break;
                                         }
                                     }
@@ -399,6 +399,15 @@ class XmlDefinedReportController extends ReportController {
                     if ($tableConditions != "") {
                         $params["filter"] = $params['filter'] . ($params['filter'] != '' ? " AND " : '') . "($tableConditions)";
                     }
+                    
+                    if ($_POST[$name . "_sorting"] != "") {
+                        array_unshift(
+                            $hardCodedSorting, [
+                                "field" => $_POST[$name . "_sorting"],
+                                "type" => $_POST[$name . "_sorting_direction"]
+                            ]
+                        );
+                    }
 
                     if (is_array($_POST[$name . "_grouping"])) {
                         foreach ($_POST[$name . "_grouping"] as $postGrouping) {
@@ -416,19 +425,8 @@ class XmlDefinedReportController extends ReportController {
                                 );
                             }
                         }
-                        //$reportGroupingFields = array_reverse($reportGroupingFields);
-                        if ($_POST[$name . "_sorting"] != "") {
-                            $hardCodedSorting = [];
-                            $hardCodedSorting[] = [
-                                "field" => $_POST[$name . "_sorting"],
-                                "type" => $_POST[$name . "_sorting_direction"]
-                            ];
-                            $hardCodedSorting = array_merge($reportGroupingFields, $hardCodedSorting);
-                        }
                         
-                        else {
-                            $hardCodedSorting = array_merge($hardCodedSorting, $reportGroupingFields);
-                        }
+                        $hardCodedSorting = array_merge($hardCodedSorting, $reportGroupingFields);
                     }
                     
                     $params["sort_field"] = $hardCodedSorting;
@@ -612,6 +610,14 @@ class XmlDefinedReportController extends ReportController {
                                         ->add(Element::create("DateField", "", "{$table["name"]}.{$fieldInfo["name"]}_start_date")->setId("{$table["name"]}_{$fieldInfo["name"]}_start_date"), $i, 2)
                                         ->add(Element::create("DateField", "", "{$table["name"]}.{$fieldInfo["name"]}_end_date")->setId("{$table["name"]}_{$fieldInfo["name"]}_end_date"), $i, 3);
                                 //->add(Element::create("Checkbox","","{$table["name"]}.{$fieldInfo["name"]}_ignore","","1"),$i,4);
+                                break;
+                            
+                            case "boolean":
+                                $filters
+                                        ->add(Element::create("Label", str_replace("\\n", " ", (string) $field["label"])), $i, 0)
+                                        ->add(Element::create("SelectionList", "", "{$table["name"]}.{$fieldInfo["name"]}_option")
+                                            ->addOption("Yes", true)
+                                            ->addOption("No", false), $i, 1);
                                 break;
 
                             case "enum":
