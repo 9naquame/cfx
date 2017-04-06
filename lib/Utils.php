@@ -320,4 +320,29 @@ class Utils
 
         return $englishDate;
     }    
+    
+    public static function getSubTitle($option, $startDate, $endDate)
+    {
+        $begin = date("jS F, Y", Utils::stringToTime($startDate));
+        $end = date("jS F, Y", Utils::stringToTime($endDate));
+        
+        switch($option)
+        {
+            case "EQUALS":
+                $return = "on $begin";
+                break;
+            case "GREATER":
+                $return = "after $begin";
+                break;
+            case "LESS":
+                $return = "before $begin";
+                break;
+            case "BETWEEN":
+            default:
+                $return = "between $begin and $end";
+                break;
+        }
+        
+        return $return;
+    }
 }
