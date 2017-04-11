@@ -136,8 +136,8 @@ class SystemLoginController extends Controller
                 switch ($userData[0]["user_status"])
                 {
                     case "0":
-                        $form->addError("Your account is currently inactive"
-                                  . "please contact the system administrator.");
+                        $form->addError("Your account is currently inactive");
+                        $form->addError("Please contact the system administrator.");
                         return true;
                         break;
                     
