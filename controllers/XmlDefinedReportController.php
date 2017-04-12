@@ -221,6 +221,13 @@ class XmlDefinedReportController extends ReportController {
                             }
 
                             switch ($fieldInfo["type"]) {
+                                case "boolean":
+                                    if ($_POST[$name . "_" . $fieldInfo["name"] . "_option"] != "") {
+                                        $filterSummaries[] = "{$headers[$key]} is {$_POST[$name . "_" . $fieldInfo["name"] . "_option"]}";
+                                        $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} is {$_POST[$name . "_" . $fieldInfo["name"] . "_option"]}";
+                                    }
+                                break;
+                                            
                                 case "string":
                                 case "text":
                                     if ($_POST[$name . "_" . $fieldInfo["name"] . "_value"] != "") {
@@ -421,12 +428,12 @@ class XmlDefinedReportController extends ReportController {
                                 $reportGroupingFields[] = array
                                     (
                                     "field" => $model->datastore->concatenate($groupingFields),
-                                    "type" => "ASC"
+//                                    "type" => "ASC NULLS FIRST"
                                 );
                             }
                         }
                         
-                        $hardCodedSorting = array_merge($hardCodedSorting, $reportGroupingFields);
+//                        $hardCodedSorting = array_merge($reportGroupingFields, $hardCodedSorting);
                     }
                     
                     $params["sort_field"] = $hardCodedSorting;
@@ -436,6 +443,7 @@ class XmlDefinedReportController extends ReportController {
                     
                     $params["no_num_formatting"] = true;
                     $params = $this->paramsCallback($params);
+                    $dataParams['numbering'] = $_POST['numbering'];
                     $this->reportData = ReportController::getReportData($params, SQLDatabaseModel::MODE_ARRAY);
 
                     unset($params["sort_field"]);
@@ -616,8 +624,8 @@ class XmlDefinedReportController extends ReportController {
                                 $filters
                                         ->add(Element::create("Label", str_replace("\\n", " ", (string) $field["label"])), $i, 0)
                                         ->add(Element::create("SelectionList", "", "{$table["name"]}.{$fieldInfo["name"]}_option")
-                                            ->addOption("Yes", true)
-                                            ->addOption("No", false), $i, 1);
+                                            ->addOption("Yes", 'true')
+                                            ->addOption("No", 'not true'), $i, 1);
                                 break;
 
                             case "enum":
@@ -692,7 +700,8 @@ class XmlDefinedReportController extends ReportController {
             $g1Paging = new Checkbox("Start on a new page", "grouping_1_newpage", "", "1");
             $g1Logo = new Checkbox("Repeat Logos", "grouping_1_logo", "", "1");
             $g1Summarize = new Checkbox("Summarize", "grouping_1_summary", "", "1");
-
+            $numbering = new Checkbox("Numbering", "numbering", "", "1");
+            
             $grouping2 = clone $grouping1;
             $grouping2->setName("{$table["name"]}_grouping[]")->setLabel("Grouping Field 2");
             $g2Paging = new Checkbox("Start on a new page", "grouping_2_newpage", "", "1");
@@ -714,6 +723,7 @@ class XmlDefinedReportController extends ReportController {
             $groupingTable->add($g1Summarize, 0, 3);
 
             $groupingTable->add($grouping2, 1, 0);
+            $groupingTable->add($numbering->setValue('1'),1,1);
             /* $groupingTable->add($g2Paging, 1, 1);
               $groupingTable->add($g2Logo, 1, 2); */
             $groupingTable->add($grouping3, 2, 0);
