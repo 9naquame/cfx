@@ -29,6 +29,16 @@ class TableContent extends ReportContent
             );                        
         }
         
+        if(isset($data_params['numbering']))
+        {
+            array_unshift($headers, "#");
+        }
+        
+        if(count($data_params["widths"]) > 0 && isset($data_params['numbering']))
+        {
+            array_unshift($data_params['widths'], 4);
+        }
+        
         $this->headers = $headers;
         if(isset($data_params["ignore"]))
         {
@@ -39,9 +49,12 @@ class TableContent extends ReportContent
                 array_splice($data_params["total"],$ignore,1);
             }
         }
+        
+        $this->style["numbering"] = $data_params["numbering"];
         $this->style["decoration"] = true;
         $this->data_params = $data_params;
         $this->setData($data);
+
         if(is_array($data_params["widths"]))
         {
             if(count($data_params["widths"])==0)
@@ -165,17 +178,27 @@ class TableContent extends ReportContent
     
     public function setData($data)
     {
-        if(isset($this->data_params["ignore"]))
+        if(isset($this->data_params["ignore"]) || isset($this->style['numbering']))
         {
+            $counter = 0;
             foreach($data as $key=>$row)
             {
-                foreach($this->data_params["ignore"] as $ignore)
+                if(isset($this->data_params["ignore"]))
                 {
-                    array_splice($row, $ignore, 1);
+                    foreach($this->data_params["ignore"] as $ignore)
+                    {
+                        array_splice($row, $ignore, 1);
+                    }
+                    $data[$key]=$row;
                 }
-                $data[$key]=$row;
+                
+                else
+                {
+                    array_unshift($data[$key], ++$counter);
+                }
             }
         }
+       
         $this->data = $data;
     }
     
