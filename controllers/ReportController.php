@@ -206,6 +206,7 @@ abstract class ReportController extends Controller
     protected function drawTable($data, $params, &$dataParams, $totalTable, $heading)
     {
         $paramsCopy = $params;
+
         if(is_array($params["ignored_fields"]))
         {
             foreach($params["ignored_fields"] as $ignored)
@@ -215,7 +216,6 @@ abstract class ReportController extends Controller
                 unset($paramsCopy["data_params"]["total"][$ignored]);
                 unset($paramsCopy["data_params"]["widths"][$ignored]);
             }
-
             $paramsCopy["headers"] = array_values($paramsCopy["headers"]);
             $paramsCopy["data_params"]["type"] = array_values($paramsCopy["data_params"]["type"]);
             $paramsCopy["data_params"]["total"] = array_values($paramsCopy["data_params"]["total"]);
@@ -232,7 +232,7 @@ abstract class ReportController extends Controller
                 }
             }
         }
-
+        
         $table = new TableContent($paramsCopy["headers"],$data,$paramsCopy["data_params"]);
         if($totalTable == true)
         {
@@ -340,81 +340,95 @@ abstract class ReportController extends Controller
         $accumulatedTotals = array();
         
         if(count($this->reportData) == 0) return;
-        
-        do
+
+        $data = [];
+        foreach ($this->reportData as $reportData)
         {
-            if($_POST["grouping_".($params["grouping_level"]+1)."_newpage"] == "1")
+            $i = 1;
+            $value = $value1 = false;
+            if($params["grouping_fields"][$i] != '')
             {
-                $params["report"]->addPage($_POST["grouping_".($params["grouping_level"]+1)."_newpage"]);
+                $explode = explode('::', $params["grouping_fields"][$i]);
+                $groupingField = array_search($explode[0], $params["fields"]);
+                unset($params["data_params"]['widths'][$groupingField]);
+                unset($params["data_params"]['total'][$groupingField]);
+                unset($params["data_params"]['type'][$groupingField]);
+                unset($params['headers'][$groupingField]);
+                $value1 = $reportData[$groupingField];
+                unset($reportData[$groupingField]);
             }
-
-            $headingValue = $this->reportData[$this->reportDataIndex][$groupingField];
-            $this->drawHeading($headingValue, $params);
-
-            $totalsBox = new TableContent($params["headers"],null);
-            $totalsBox->style["totalsBox"] = true;
-            array_unshift($params["previous_headings"], array($headingValue, $groupingField));
-            $params["ignored_fields"][] = $groupingField;
-
-            if($params["grouping_fields"][$groupingLevel + 1] == "")
+            $i--;
+           
+            if($params["grouping_fields"][$i] != '')
             {
-                $data = array();
-                do
+                $explode = explode('::', $params["grouping_fields"][$i]);
+                $groupingField = array_search($explode[0], $params["fields"]);
+                unset($params["data_params"]['widths'][$groupingField]);
+                unset($params["data_params"]['total'][$groupingField]);
+                unset($params["data_params"]['type'][$groupingField]);
+                unset($params['headers'][$groupingField]);
+                $value = $reportData[$groupingField];
+                unset($reportData[$groupingField]);
+            }
+            
+            if($value !== false && $value1 !== false)
+            {
+                $data[$value][$value1]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value !== false)
+            {
+                $data[$value]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value1 !== false)
+            {
+                $data[$value1]['xx_data_xx'][] = $reportData;
+            }
+        }
+        
+//        var_dump(count($data), $depth);die();
+        $totals = $this->groupGenerationDraw($data, $params);
+        
+    }
+    
+    private function groupGenerationDraw($data, $params)
+    {
+        foreach ($data as $key => $draw)
+        {
+            if($key === 'xx_data_xx')
+            {
+                $totals = $this->drawTable($draw, $params, $params["data_params"], null, key($draw));
+
+                if($this->drawTotals && $totals != null)
                 {
-                    //if($t == 1000) die(); $t++;
-                    $continue = true;
-                    $row = $this->reportData[$this->reportDataIndex];
-                    //var_dump($row);
-
-                    @$data[] = array_values($row);
-
-                    $this->reportDataIndex++;
-
-                    foreach($params["previous_headings"] as $heading)
+                    $totalsBox = new TableContent($params["headers"],null);
+                    $totalsBox->style["totalsBox"] = true;
+                    $totalsBox->data_params = $this->dataParams;
+                    $totalsBox->data_params["widths"] = $this->widths;
+                    $totals[0] = $this->lastKey;
+                    $totalsBox->setData($totals);
+                    $params["report"]->add($totalsBox);
+                    foreach($totals as $i => $total)
                     {
-                        if($heading[0] != $this->reportData[$this->reportDataIndex][$heading[1]])
-                        {
-                            array_shift($params["previous_headings"]);
-                            $continue = false;
-                            break;
-                        }
+                        if($total === null) continue;
+                        $accumulatedTotals[$i] += $total;
                     }
-                }while($continue);
-                
-                $totals = $this->drawTable($data, $params, $params["data_params"], null, $headingValue);
-                array_pop($params["ignored_fields"]);
-            }
-            else
-            {
-                $params["grouping_level"]++;
-                $totals = $this->generateTable($params);
-                array_shift($params["previous_headings"]);
-                $params["grouping_level"]--;
-                array_pop($params["ignored_fields"]);
-            }
-
-            if($this->drawTotals && $totals != null)
-            {
-                $totalsBox->data_params = $this->dataParams;
-                $totalsBox->data_params["widths"] = $this->widths;
-                $totals[0] = "$headingValue";
-                $totalsBox->setData($totals);
-                $params["report"]->add($totalsBox);
-                foreach($totals as $i => $total)
-                {
-                    if($total === null) continue;
-                    $accumulatedTotals[$i] += $total;
                 }
             }
-
-            if($params["previous_headings"][0][0] != $this->reportData[$this->reportDataIndex][$params["previous_headings"][0][1]])
+            
+            else
             {
-                break;
+                $this->drawHeading($key, $params); 
+                $values = array_values($data[$key]);
+                
+                if(is_array($values))
+                {
+                    $this->lastKey = $key;
+                    $this->groupGenerationDraw($data[$key], $params);
+                }
             }
-
-        }while($this->reportDataIndex < count($this->reportData));
-        
-        return $accumulatedTotals;        
+        }
     }
 
     public function getPermissions()
