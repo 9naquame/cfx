@@ -343,8 +343,21 @@ abstract class ReportController extends Controller
         $data = [];
         foreach ($this->reportData as $reportData)
         {
-            $i = 1;
+            $i = 2;
             $value = $value1 = false;
+            if($params["grouping_fields"][$i] != '')
+            {
+                $explode = explode('::', $params["grouping_fields"][$i]);
+                $groupingField = array_search($explode[0], $params["fields"]);
+                unset($params["data_params"]['widths'][$groupingField]);
+                unset($params["data_params"]['total'][$groupingField]);
+                unset($params["data_params"]['type'][$groupingField]);
+                unset($params['headers'][$groupingField]);
+                $value2 = $reportData[$groupingField];
+                unset($reportData[$groupingField]);
+            }
+            $i--;
+           
             if($params["grouping_fields"][$i] != '')
             {
                 $explode = explode('::', $params["grouping_fields"][$i]);
@@ -370,9 +383,24 @@ abstract class ReportController extends Controller
                 unset($reportData[$groupingField]);
             }
             
-            if($value !== false && $value1 !== false)
+            if($value !== false && $value1 !== false && $value2 !== false)
+            {
+                $data[$value][$value1][$value2]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value !== false && $value1 !== false)
             {
                 $data[$value][$value1]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value !== false && $value2 !== false)
+            {
+                $data[$value][$value2]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value1 !== false && $value2 !== false)
+            {
+                $data[$value1][$value2]['xx_data_xx'][] = $reportData;
             }
             
             else if($value !== false)
@@ -383,6 +411,11 @@ abstract class ReportController extends Controller
             else if($value1 !== false)
             {
                 $data[$value1]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value2 !== false)
+            {
+                $data[$value2]['xx_data_xx'][] = $reportData;
             }
         }
         
