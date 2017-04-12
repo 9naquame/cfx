@@ -344,7 +344,7 @@ abstract class ReportController extends Controller
         foreach ($this->reportData as $reportData)
         {
             $i = 2;
-            $value = $value1 = false;
+            $value = $value1 = $value2 = false;
             if($params["grouping_fields"][$i] != '')
             {
                 $explode = explode('::', $params["grouping_fields"][$i]);
