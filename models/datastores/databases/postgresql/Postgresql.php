@@ -220,6 +220,11 @@ class Postgresql extends SQLDBDataStore
             {
                switch($fields[$field]["type"])
                {  
+                   case "double":
+                   case "integer":    
+                       $this->formattedData[$field] = Utils::deCommalize($value);
+                       break;
+                       
                    case "boolean":
                        if(is_bool($value))
                        {
