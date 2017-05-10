@@ -168,11 +168,14 @@ class ModelController extends Controller
      */
     public function __construct($model = "")
     {
+        global  $redirectedPackage;
+        
         $this->modelName = ($this->modelName == "" ? $model : $this->modelName);
+        $name = $redirectedPackage . $this->modelName;
         $this->model = Model::load($this->modelName);
         $this->name = $this->model->name;
         $this->urlPath = Application::$prefix."/".str_replace(".","/",$this->modelName);
-        $this->permissionPrefix = $this->permissionPrefix == '' ? str_replace(".", "_", $this->modelName) : $this->permissionPrefix;
+        $this->permissionPrefix = $this->permissionPrefix == '' ? str_replace(".", "_", $name) : $this->permissionPrefix;
         $this->label = $this->model->label;
         $this->description = $this->model->description;
         Application::setTitle($this->label);
