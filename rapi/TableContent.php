@@ -32,6 +32,8 @@ class TableContent extends ReportContent
         if(isset($data_params['numbering']))
         {
             array_unshift($headers, "#");
+            array_unshift($data_params['type'], '');
+            array_unshift($data_params['total'], 'Total');
         }
         
         if(count($data_params["widths"]) > 0 && isset($data_params['numbering']))

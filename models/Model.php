@@ -902,7 +902,7 @@ abstract class Model implements ArrayAccess
 class ModelException extends Exception{
     public $object;
     
-    public function __construct($message, $object)
+    public function __construct($message, $object = null)
     {
         parent::__construct($message);
         $this->object = $object;

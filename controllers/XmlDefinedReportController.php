@@ -499,7 +499,7 @@ class XmlDefinedReportController extends ReportController {
                         $params["previous_headings"] = array();
                         $params["ignored_fields"] = array();
                         $total = $this->generateTable($params);
-
+                        
                         if (is_array($total) && count($total) > 0) {
                             $total[0] = $total[0] == "" ? "Overall Total" : $total[0];
                             $dataParams["widths"] = $this->widths;

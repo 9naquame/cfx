@@ -48,6 +48,7 @@ abstract class ReportController extends Controller
      * rendering.
      * @var array
      */
+    protected $totaled;
     protected $widths;
     public $referencedFields;
     protected $form;
@@ -62,6 +63,7 @@ abstract class ReportController extends Controller
     public function __construct()
     {
         $this->_showInMenu = true;
+        $this->totaled = [];
     }
 
     /**
@@ -206,7 +208,6 @@ abstract class ReportController extends Controller
     protected function drawTable($data, $params, &$dataParams, $totalTable, $heading)
     {
         $paramsCopy = $params;
-
         if(is_array($params["ignored_fields"]))
         {
             foreach($params["ignored_fields"] as $ignored)
@@ -244,7 +245,6 @@ abstract class ReportController extends Controller
 
         $params["report"]->add($table);
         $total = $table->getTotals();
-        
         return $total;
     }
 
@@ -276,27 +276,27 @@ abstract class ReportController extends Controller
     	$newParams = array("total"=>array(false), "type"=>array("string"));
     	foreach($params["data_params"]['total'] as $index => $value)
     	{
-    		if($value === true)
-    		{
-    			$tempField = $params["fields"][$index];
-    		    $newFields[] = $tempField;
-    		    $newHeaders[] = $params["headers"][array_search($tempField,$params["fields"])];
-    		    $indices[] = array_search($tempField,$params["fields"]);
-    		    $newParams["total"][] = true;
-    		    $newParams["type"][] = $params["data_params"]["type"][$index];
-    		}
+            if($value === true)
+            {
+                $tempField = $params["fields"][$index];
+                $newFields[] = $tempField;
+                $newHeaders[] = $params["headers"][array_search($tempField,$params["fields"])];
+                $indices[] = array_search($tempField,$params["fields"]);
+                $newParams["total"][] = true;
+                $newParams["type"][] = $params["data_params"]["type"][$index];
+            }
     	}
 
     	$filteredData = array();
     	
-    	foreach($this->reportData as $data)
+        foreach($this->reportData as $data)
     	{
-    		$row = array();
-    		foreach($indices as $index)
-    		{
-    			$row[] = $data[$index];
-    		}
-    		$filteredData[] = $row;
+            $row = array();
+            foreach($indices as $index)
+            {
+                $row[] = $data[$index];
+            }
+            $filteredData[] = $row;
     	}
     	
     	$summarizedData = array();
@@ -304,20 +304,20 @@ abstract class ReportController extends Controller
     	
     	for($i = 0; $i < count($filteredData); $i++)
     	{
-    		$row = array();
-    		$row[0] = $currentRow;
-    		$add = false;
-    		while($filteredData[$i][0] == $currentRow)
-    		{
-    			for($j = 1; $j < count($indices); $j++)
-    			{
-    				$add = true;
-    				$row[$j] += str_replace(",", "", $filteredData[$i][$j]);
-    			}
-    			$i++;
-    		}
-    		if($add) $summarizedData[] = $row;
-    		$currentRow = $filteredData[$i][0];
+            $row = array();
+            $row[0] = $currentRow;
+            $add = false;
+            while($filteredData[$i][0] == $currentRow)
+            {
+                for($j = 1; $j < count($indices); $j++)
+                {
+                    $add = true;
+                    $row[$j] += str_replace(",", "", $filteredData[$i][$j]);
+                }
+                $i++;
+            }
+            if($add) $summarizedData[] = $row;
+            $currentRow = $filteredData[$i][0];
             $i--;
     	}
         $table = new TableContent($newHeaders, $summarizedData, $newParams);
@@ -337,15 +337,27 @@ abstract class ReportController extends Controller
         $explode = explode('::', $params["grouping_fields"][$params["grouping_level"]]);
         $groupingField = array_search($explode[0],$params["fields"]);
         $groupingLevel = $params["grouping_level"];
-        $accumulatedTotals = array();
         
         if(count($this->reportData) == 0) return;
 
         $data = [];
         foreach ($this->reportData as $reportData)
         {
-            $i = 1;
-            $value = $value1 = false;
+            $i = 2;
+            $value = $value1 = $value2 = false;
+            if($params["grouping_fields"][$i] != '')
+            {
+                $explode = explode('::', $params["grouping_fields"][$i]);
+                $groupingField = array_search($explode[0], $params["fields"]);
+                unset($params["data_params"]['widths'][$groupingField]);
+                unset($params["data_params"]['total'][$groupingField]);
+                unset($params["data_params"]['type'][$groupingField]);
+                unset($params['headers'][$groupingField]);
+                $value2 = $reportData[$groupingField];
+                unset($reportData[$groupingField]);
+            }
+            $i--;
+           
             if($params["grouping_fields"][$i] != '')
             {
                 $explode = explode('::', $params["grouping_fields"][$i]);
@@ -371,9 +383,24 @@ abstract class ReportController extends Controller
                 unset($reportData[$groupingField]);
             }
             
-            if($value !== false && $value1 !== false)
+            if($value !== false && $value1 !== false && $value2 !== false)
+            {
+                $data[$value][$value1][$value2]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value !== false && $value1 !== false)
             {
                 $data[$value][$value1]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value !== false && $value2 !== false)
+            {
+                $data[$value][$value2]['xx_data_xx'][] = $reportData;
+            }
+            
+            else if($value1 !== false && $value2 !== false)
+            {
+                $data[$value1][$value2]['xx_data_xx'][] = $reportData;
             }
             
             else if($value !== false)
@@ -385,11 +412,15 @@ abstract class ReportController extends Controller
             {
                 $data[$value1]['xx_data_xx'][] = $reportData;
             }
+            
+            else if($value2 !== false)
+            {
+                $data[$value2]['xx_data_xx'][] = $reportData;
+            }
         }
         
-//        var_dump(count($data), $depth);die();
-        $totals = $this->groupGenerationDraw($data, $params);
-        
+        $this->groupGenerationDraw($data, $params);
+        return $this->totaled;
     }
     
     private function groupGenerationDraw($data, $params)
@@ -399,21 +430,28 @@ abstract class ReportController extends Controller
             if($key === 'xx_data_xx')
             {
                 $totals = $this->drawTable($draw, $params, $params["data_params"], null, key($draw));
-
+                
                 if($this->drawTotals && $totals != null)
                 {
-                    $totalsBox = new TableContent($params["headers"],null);
+                    $totalsBox = new TableContent($params["headers"], null);
                     $totalsBox->style["totalsBox"] = true;
                     $totalsBox->data_params = $this->dataParams;
                     $totalsBox->data_params["widths"] = $this->widths;
+                    if($params['data_params']['numbering'])
+                    {
+                        ksort($totals);
+                        array_shift($totals);
+                    }
                     $totals[0] = $this->lastKey;
                     $totalsBox->setData($totals);
+
                     $params["report"]->add($totalsBox);
                     foreach($totals as $i => $total)
                     {
                         if($total === null) continue;
-                        $accumulatedTotals[$i] += $total;
+                        $this->totaled[$i] += $total;
                     }
+                    
                 }
             }
             

@@ -8,7 +8,7 @@
  */
 class MultiFields extends MultiElements
 {
-    public function __construct($template)
+    public function __construct($template = null)
     {
         parent::__construct($template);
     }
