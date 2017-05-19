@@ -13,13 +13,13 @@ class ModelSearchField extends Field
     protected $searchFields = array();
     protected $model;
     protected $storedField;
-    public $boldFirst = true;
+    public $boldFirst;
     private $storedFieldSet = false;
     private $andConditions;
     private $andBoundData = [];
     private $onChangeAttribute;
     
-    public function __construct($path=null,$value=null)
+    public function __construct($path=null,$value=null, $boldFirst = true)
     {
         if($path!=null)
         {
@@ -35,6 +35,8 @@ class ModelSearchField extends Field
             $this->addSearchField($value);
             $this->storedField = $info["field"];
         }
+        
+        $this->boldFirst = $boldFirst;
     }
     
     public function setAndConditions($andConditions, $bindData = [])
