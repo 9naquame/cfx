@@ -372,7 +372,7 @@ abstract class Container extends Element
      * 
      * @return Container
      */
-    public function getFields()
+    public function getFields($includeContainers = false)
     {
         $elements = $this->getElements();
         $fields = array();
@@ -384,6 +384,11 @@ abstract class Container extends Element
             }
             else if($element->getType()=="Container")
             {
+                if($includeContainers)
+                {
+                    $fields[] = $element;
+                }
+                
                 foreach($element->getFields() as $field)
                 {
                     $fields[] = $field;
