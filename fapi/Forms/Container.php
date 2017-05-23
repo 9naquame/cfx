@@ -389,7 +389,7 @@ abstract class Container extends Element
                     $fields[] = $element;
                 }
                 
-                foreach($element->getFields() as $field)
+                foreach($element->getFields($includeContainers) as $field)
                 {
                     $fields[] = $field;
                 }
