@@ -121,17 +121,15 @@ class MultiElements extends Container
         $buttons->addButton("Clear");
         $buttons->buttons[0]->addAttribute("onclick","fapiMultiFormRemove('--index--')");
 
-        $elements = $template->getFields();
+        $elements = $template->getElements(true);
         foreach($elements as $element)
         {
-            if($element->getType()=="Field")
-            {
-                $element->setId($element->getId()==""?$element->getName():$element->getId());
-                $element->setName($template->getName().".".$element->getName()."[]");
-            }
+            $element->setId($element->getId()==""?$element->getName():$element->getId());
+            $element->setName($template->getName().".".$element->getName()."[]");
 
             $element->setId($element->getId()."_--index--");
         }
+
         $this->templateName = $template->getName();
         $template->setId("multiform-content---index--");
         $template->add($buttons);
