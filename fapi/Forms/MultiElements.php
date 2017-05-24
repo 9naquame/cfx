@@ -78,9 +78,6 @@ class MultiElements extends Container
         {
             $this->data = array();        
             $fields = $this->template->getFields();
-            
-            var_dump($this);
-            die();
             foreach($fields as $field)
             {
                 $key = str_replace(array(".","[]"),array("_",""),$field->getName());
@@ -100,6 +97,11 @@ class MultiElements extends Container
         
         return $this->data;
     }
+    
+    public function getTemplate()
+    {
+        return $this->template;
+    }
 
     public function getData($storable=false)
     {
@@ -113,11 +115,6 @@ class MultiElements extends Container
         {
             $this->data = $data[$this->templateName];
         }
-    }
-    
-    public function getTemplate()
-    {
-        return $this->template;
     }
 
     public function setTemplate($template)
