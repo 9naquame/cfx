@@ -8,9 +8,11 @@ class Grid extends Field
     private $hash;
     private $numRows = 500;
     private $totals;
+    private $grided;
 
-    public function __construct($label, $name)
+    public function __construct($label, $name, $grided = true)
     {
+        $this->grided = $grided;
         $this->setLabel($label);
         $this->setName($name);
         $this->hash = str_replace(".", "_", $name);
@@ -84,7 +86,7 @@ class Grid extends Field
         }
         $ret .= "</tr></table>";
 
-        $ret .= "<div id='{$this->hash}-data' class='fapi-grid'><table width='100%'><tbody>";
+        $ret .= "<div id='{$this->hash}-data' " . ($this->grided ? "class='fapi-grid'"  : '') . "><table width='100%'><tbody>";
         for($i = 0; $i < $this->numRows; $i++)
         {
             $ret .= "<tr><td  id='fapi-numbering" . $i . "' class='fapi-grid-header'><center>" . ($i + 1) . "</center></td>";
