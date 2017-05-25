@@ -272,7 +272,7 @@ function fapiSetSearchValue(name, value, display, func)
     $("#" + name + "_search_entry").val(display);
     $("#" + name + "_search_area").hide("fast");
     $("#" + name).val(value);
-    window[func](value);
+    window[func](value, name);
 }
 
 function fapiFieldsetCollapse(id)
