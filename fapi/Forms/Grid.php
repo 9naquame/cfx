@@ -76,21 +76,18 @@ class Grid extends Field
         // Header Table
         $ret = "<table id='{$this->hash}' class='fapi-grid-header-table' width='100%'>";
         $ret .= "<tr><td id='header-0'></td>";
-        $script = "$('#header-0').width($('#gauge-0').width());";
-        $gauge = "<tr><td id='gauge-0'></td>";
+        $script = "$('#header-0').width($('#fapi-numbering0').width());";
         foreach($this->columns as $column)
         {
-            $ret .= "<td class='fapi-grid-header'  id='{$column->getName()}-header'>" . $column->getLabel() . "</td>";
-            $gauge .= "<td id='{$column->getName()}-gauge'></td>";
-            $script .= "$('#{$column->getName()}-header').width($('#{$column->getName()}-gauge').width());";
+            $ret .= "<td class='fapi-grid-header'  id='{$column->getName()}-header'><center>" . $column->getLabel() . "</center></td>";
+            $script .= "$('#{$column->getName()}-header').width($('#{$column->getName()}0').width());";
         }
-        $gauge .= "</tr>";
         $ret .= "</tr></table>";
 
         $ret .= "<div id='{$this->hash}-data' class='fapi-grid'><table width='100%'><tbody>";
         for($i = 0; $i < $this->numRows; $i++)
         {
-            $ret .= "<tr><td  class='fapi-grid-header'><center>" . ($i + 1) . "</center></td>";
+            $ret .= "<tr><td  id='fapi-numbering" . $i . "' class='fapi-grid-header'><center>" . ($i + 1) . "</center></td>";
             foreach($this->columns as $j => $column)
             {
                 if(isset($data[$this->name][$i][$column->getName()]))
@@ -113,15 +110,12 @@ class Grid extends Field
         // Footer Table
         $ret .= "<table id='{$this->hash}' class='fapi-grid-footer-table' width='100%'>";
         $ret .= "<tr><td id='footer-0'></td>";
-        $script .= "$('#footer-0').width($('#gauge-0').width());";
-        $gauge = "<tr><td id='gauge-0'></td>";
+        $script .= "$('#footer-0').width($('#fapi-numbering0').width());";
         foreach($this->columns as $column)
         {
             $ret .= "<td class='fapi-grid-footer'  id='{$column->getName()}-footer'></td>";
-            $gauge .= "<td id='{$column->getName()}-gauge'></td>";
-            $script .= "$('#{$column->getName()}-footer').width($('#{$column->getName()}-gauge').width());";
+            $script .= "$('#{$column->getName()}-footer').width($('#{$column->getName()}0').width());";
         }
-        $gauge .= "</tr>";
 
         $ret .= "</tr></table>";
         
