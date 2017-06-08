@@ -222,14 +222,21 @@ abstract class Model implements ArrayAccess
     
     public function setData($data,$primary_key_field=null,$primary_key_value=null)
     {
-        $this->datastore->data = $data;
-        
         $primary_key_field = $primary_key_field == "" ? $this->getKeyField() : $primary_key_field;
         $primary_key_value = $primary_key_value == "" ? $data[$primary_key_field] : $primary_key_value;
 
         if($primary_key_field !="" && $primary_key_value !="") 
         {
-            $this->datastore->tempData = $this->getWithField($primary_key_field,$primary_key_value);
+            $temp = $this->getWithField($primary_key_field,$primary_key_value);
+            foreach ($temp[0] as $key => $value)
+            {
+                if(!isset($data[$key]))
+                {
+                    $data[$key] = $value;
+                }
+            }
+            
+            $this->datastore->tempData = $temp;
             $this->assumedTransactionMode = Model::TRANSACTION_MODE_EDIT;
         } 
         else 
@@ -237,6 +244,7 @@ abstract class Model implements ArrayAccess
             $this->assumedTransactionMode = Model::TRANSACTION_MODE_ADD;
         }
         
+        $this->datastore->data = $data;
         return $this->validate();
     }
     
