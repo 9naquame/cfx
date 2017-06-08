@@ -278,6 +278,7 @@ class SystemRolesController extends ModelController
                 if($module->showInMenu())
                 {
                     //$children = $this->getPermissionList("$path/$entry", $prefix);
+                    $module->permissionPrefix = str_replace('.', '_', $module->modelName);
                     $permissions = $module->getPermissions();
                     $list[] = array(
                         "title"          => ucwords(str_replace("_", " ", $entry)), 
