@@ -123,7 +123,7 @@ class ModelSearchField extends Field
         if($this->getValue()!="")
         {
             $data = $this->model[$this->getValue()];
-            for($i=2;$i<count($jsonSearchFields);$i++)
+            for($i=1;$i<count($jsonSearchFields);$i++)
             {
                 $val .= $data[0][$jsonSearchFields[$i]]." ";
             }
