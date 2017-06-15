@@ -110,7 +110,11 @@ class PDFReport extends Report
                 {
                     $this->pdf->SetFillColor(180, 200, 180);
                     $this->pdf->Cell(0,isset($content->style["height"])?$content->style["height"]:$content->style["size"]*0.353+1,$content->getText(),0,0,$content->style["align"],$content->style["fill"]);
-                    $this->pdf->Ln();
+                    
+                    if($content->style["bottom_margin"] != 'none')
+                    {
+                        $this->pdf->Ln();
+                    }
                 }
 
                 if(isset($content->style["bottom_margin"])) $this->pdf->Ln($content->style["bottom_margin"]);
