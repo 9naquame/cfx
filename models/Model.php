@@ -230,7 +230,7 @@ abstract class Model implements ArrayAccess
             $temp = $this->getWithField($primary_key_field,$primary_key_value);
             foreach ($temp[0] as $key => $value)
             {
-                if(!isset($data[$key]))
+                if(!array_key_exists($key, $data))
                 {
                     $data[$key] = $value;
                 }
@@ -243,7 +243,7 @@ abstract class Model implements ArrayAccess
         {
             $this->assumedTransactionMode = Model::TRANSACTION_MODE_ADD;
         }
-        
+
         $this->datastore->data = $data;
         return $this->validate();
     }
