@@ -546,7 +546,10 @@ class Postgresql extends SQLDBDataStore
             $params['bind'][] = $params['offset'];
         }
         
-        Application::log()->info($params['cache_key']);
+        if(!$_REQUEST['__api_mode']){
+            Application::log()->info($params['cache_key']);
+        }
+        
         $data = $other_model->datastore->query($query,$mode, $params['bind'], $params['cache_key']);
         
         if(isset($params['cache_key'])) {
