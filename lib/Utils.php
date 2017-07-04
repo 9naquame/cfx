@@ -345,4 +345,17 @@ class Utils
         
         return $return;
     }
+    
+    public static function counter($array)
+    {
+        foreach($array as $key => $value)
+        {
+            if(empty($value))
+            {
+                unset($array[$key]);
+            }
+        }
+        
+        return count($array);
+    }
 }
