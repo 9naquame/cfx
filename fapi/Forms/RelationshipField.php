@@ -23,6 +23,9 @@ class RelationshipField extends Field
     protected $subModel;
     protected $mainModelField;
     protected $subModelField;
+    
+    protected $mainSort;
+    protected $subSort;
 
     /**
      * Creates a new relationship field.
@@ -31,7 +34,7 @@ class RelationshipField extends Field
      * @param unknown_type $mainModelPath The path of the main model.
      * @param unknown_type $subModelPath The path of the sub model.
      */
-    public function __construct($label, $name, $mainModelPath, $subModelPath)
+    public function __construct($label, $name, $mainModelPath, $subModelPath, $mainSort = null, $subSort = null)
     {
         $this->setLabel($label);
         $this->mainSelectionList = new SelectionList();
@@ -45,7 +48,19 @@ class RelationshipField extends Field
         $this->subModelPathInfo = Model::resolvePath($subModelPath);
         $this->mainModel = Model::load($mainModelPathInfo["model"]);
         $this->subModel = Model::load($this->subModelPathInfo["model"]);
-        $info = $this->mainModel->get(array("fields"=>array($mainModelPathInfo["field"],$this->mainModel->getKeyField()),"sort_field"=>$mainModelPathInfo["field"]),Model::MODE_ARRAY);
+        
+        $sort = $mainSort ? $mainSort : $mainModelPathInfo["field"];
+        $sorted = $subSort ? $subSort : $this->subModelPathInfo["field"];
+        
+        $this->mainSort = $sort;
+        $this->subSort = $sorted;
+        
+        $info = $this->mainModel->get(
+            array(
+                "fields"=>array($mainModelPathInfo["field"],$this->mainModel->getKeyField()),
+                "sort_field"=> $this->mainSort
+            ),
+        Model::MODE_ARRAY);
         foreach($info as $inf)
         {
             $this->mainSelectionList->addOption($inf[0], $inf[1]);
@@ -58,7 +73,15 @@ class RelationshipField extends Field
         if($value=="") return;
         $mainValue = $this->subModel->get(array("fields"=>array($this->mainModel->getKeyField()),"filter"=>"{$this->subModel->getKeyField()}= ?","bind"=>[$value]),Model::MODE_ARRAY,false,false);
         $this->mainSelectionList->setValue($mainValue[0][0]);
-        $subValues = $this->subModel->get(array("fields"=>array($this->subModel->getKeyField(),$this->subModelPathInfo["field"]),"filter"=>"{$this->subModel->getKeyField()}= ?","bind"=>[$value]),Model::MODE_ARRAY,false,false);
+        
+        $subValues = $this->subModel->get(
+            array(
+                "fields"=>array($this->subModel->getKeyField(),$this->subModelPathInfo["field"]),
+                "filter"=>"{$this->subModel->getKeyField()}= ?",
+                "bind"=>[$value],
+                "sort_field"=> $this->subSort
+            ), 
+        Model::MODE_ARRAY,false,false);
         foreach($subValues as $subValue)
         {
             $this->subSelectionList->addOption($subValue[1], $subValue[0]);
@@ -124,15 +147,15 @@ class RelationshipField extends Field
 
     public function render()
     {
+        $sort = explode(" ", $this->subSort);
         $this->mainSelectionList->addAttribute("onchange","fapi_change_{$this->name}()");        
         $object = array
         (
             "model"=>$this->subModel->package,
             "format"=>"json",
             "fields"=>array($this->subModelPathInfo["field"],$this->subModel->getKeyField()),
-            "sortField"=>$this->subModelPathInfo["field"],
-            "sort"=>"DESC"
-            
+            "sortField"=>$sort[0] ? $sort[0] : $this->subModelPathInfo["field"],
+            "sort"=>sort[1] ? $sort[1] : 'desc'
         );
 
         $path = Application::$prefix."/system/api/query";
