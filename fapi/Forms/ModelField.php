@@ -25,13 +25,14 @@ class ModelField extends SelectionList
      * @param $path The full path to the field in the module which is to be returned by this field.
      * @param $value The name of the field from the model whose value should be displayed in the list.
      */
-    public function __construct($path,$value)
+    public function __construct($path,$value, $sort = null)
     {
         global $redirectedPackage;
         
         $this->info = Model::resolvePath($path);
         $this->model = Model::load((substr($this->info["model"],0,1) == "." ? $redirectedPackage: "") . $this->info["model"]);
         $this->valueField = $value;
+        $sortField = $sort ? $sort : $value;
         $field = $this->model->getFields(array($value));
 
         $this->setLabel($field[0]["label"]);
@@ -40,7 +41,7 @@ class ModelField extends SelectionList
         
         $params = array(
             "fields" => array($this->info["field"],$this->valueField),
-            "sort_field" => $this->valueField,
+            "sort_field" => $sortField,
         );
         
         if($this->conditions != '')
