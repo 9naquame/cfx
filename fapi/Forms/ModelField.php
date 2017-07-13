@@ -32,44 +32,37 @@ class ModelField extends SelectionList
         $this->info = Model::resolvePath($path);
         $this->model = Model::load((substr($this->info["model"],0,1) == "." ? $redirectedPackage: "") . $this->info["model"]);
         $this->valueField = $value;
-        $sortField = $sort ? $sort : $value;
+        $this->sortField = $sort ? $sort : $value;
         $field = $this->model->getFields(array($value));
+        
+        $this->params['fields'] = [$this->info["field"],$this->valueField];
+        $this->params['"sort_field'] = $this->sortField;
 
         $this->setLabel($field[0]["label"]);
         $this->setDescription($field[0]["description"]);
         $this->setName($this->info["field"]);
-        
-        $params = array(
-            "fields" => array($this->info["field"],$this->valueField),
-            "sort_field" => $sortField,
-        );
-        
-        if($this->conditions != '')
-        {
-            $params['conditions'] = $this->conditions;
-        }           
-        
-        $data = $this->model->get(
-            $params,
-            Model::MODE_ARRAY
-        );
+    }
+    
+    public function setConditions($filter, $bind)
+    {
+        $this->params['filter'] = $filter;
+        $this->params['bind'] = $bind;
+        return $this;
+    }
+    
+    public function render()
+    {        
+        $data = $this->model->get($this->params, Model::MODE_ARRAY);
 
         foreach($data as $datum)
         {
-            if($datum[1] == "")
-            {
+            if($datum[1] == ""){
                 $this->addOption($datum[0]);
-            }
-            else
-            {
+            } else {
                 $this->addOption($datum[1],$datum[0]);
             }
         }         
-    }
-    
-    public function setConditions($conditions)
-    {
-        $this->conditions = $conditions;
-        return $this;
+        
+        return parent::render();
     }
 }
