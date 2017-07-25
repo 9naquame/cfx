@@ -36,7 +36,7 @@ class ModelField extends SelectionList
         $field = $this->model->getFields(array($value));
         
         $this->params['fields'] = [$this->info["field"],$this->valueField];
-        $this->params['"sort_field'] = $this->sortField;
+        $this->params['sort_field'] = $this->sortField;
 
         $this->setLabel($field[0]["label"]);
         $this->setDescription($field[0]["description"]);
