@@ -14,6 +14,13 @@ class NestedModelController extends ModelController
      */
     protected $parentController;
     
+    public function __construct($model = "") 
+    {
+        $prefix = str_replace(".", '_', $model);
+        $this->permissionPrefix = $prefix;
+        parent::__construct($model);
+    }
+    
     public function getLabel()
     {
         $entity = reset($this->parentController->model[$this->parentItemId]);
@@ -55,6 +62,11 @@ class NestedModelController extends ModelController
     public function setEntity($entity)
     {
         $this->entity = $entity;
+    }
+    
+    public function getEntity()
+    {
+        return $this->entity;
     }
     
     public function getParentItemId()

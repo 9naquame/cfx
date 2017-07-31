@@ -76,12 +76,13 @@ class SystemRolesController extends ModelController
             
             foreach($permissions as $permission => $value)
             {
+                $count = count($value);
                 $this->permissions->delete(array("filter"=>"role_id = ? AND permission = ?", "bind"=>array($params[0], $permission)));
                 $this->permissions->setData(array(
                     "role_id"     => $params[0], 
                     "permission" => $permission,
-                    "value"         => $value[0],
-                    "module"     => $value[1],
+                    "value"         => $value[$count -2],
+                    "module"     => $value[$count -1],
                 ));
                 $this->permissions->save();
             }
