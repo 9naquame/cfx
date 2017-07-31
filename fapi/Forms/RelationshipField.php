@@ -114,7 +114,7 @@ class RelationshipField extends Field
                     $this->mainModelField,
                     $this->subModelField
                 ),
-                'filter' => "{$this->name} = ?",
+                'filter' => "{$this->subModel->database}.{$this->name} = ?",
                 'bind' => [$value]
             )
         ));
