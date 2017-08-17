@@ -238,8 +238,7 @@ class Postgresql extends SQLDBDataStore
                     
                   case "date":
                       $value = is_numeric($value) ? $value : Utils::stringToTime($value);
-                      $this->formattedData[$field] = 
-                      $value == "" ? "null" : date("Y-m-d", $value);
+                      $this->formattedData[$field] = !isset($value) ? "null" : date("Y-m-d", $value);
                       break;
                   default:
                       $this->formattedData[$field] = $value;
