@@ -65,4 +65,20 @@ class ModelField extends SelectionList
         
         return parent::render();
     }
+    
+    public function getDisplayValue()
+    {
+        $data = $this->model->get($this->params, Model::MODE_ARRAY);
+
+        foreach($data as $datum)
+        {
+            if($datum[1] == ""){
+                $this->addOption($datum[0]);
+            } else {
+                $this->addOption($datum[1],$datum[0]);
+            }
+        }         
+        
+        return parent::getDisplayValue();
+    }
 }
