@@ -19,7 +19,7 @@ class MultiFields extends MultiElements
         $buttons = new ButtonBar();
         $buttons->setId("multi-form-buttons");
         $buttons->addButton("Clear");
-        $buttons->buttons[0]->addAttribute("onclick","fapiMultiFormRemove('--index--')");
+        $buttons->buttons[0]->addAttribute("onclick","fapiMultiFormRemove('{$this->index}', '--index--')");
         $this->template->setName($this->template->getName()."[]");
         $this->templateName = $template->getName();
         $template->setId("multiform-content---index--");

@@ -110,9 +110,9 @@ function fapiMultiFormReset(id)
     $('#multiform-contents-' + id).html('');
 }
 
-function fapiMultiFormRemove(id)
+function fapiMultiFormRemove(index, id)
 {
-    $("#multiform-content-" + id).remove();
+    $("#multiform-content-" + index + '-' + id).remove();
 }
 
 function fapiMultiFormAdd(id)
