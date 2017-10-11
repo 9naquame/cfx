@@ -24,6 +24,7 @@
     },
     "include-path" : [
         "./",
+        "lib",
         "model_controller",
         "model_controller/jobs",
         "controllers",
