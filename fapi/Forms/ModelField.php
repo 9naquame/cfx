@@ -36,7 +36,7 @@ class ModelField extends SelectionList
         $field = $this->model->getFields(array($value));
         
         $this->params['fields'] = [$this->info["field"],$this->valueField];
-        $this->params['"sort_field'] = $this->sortField;
+        $this->params['sort_field'] = $this->sortField;
 
         $this->setLabel($field[0]["label"]);
         $this->setDescription($field[0]["description"]);
@@ -64,5 +64,21 @@ class ModelField extends SelectionList
         }         
         
         return parent::render();
+    }
+    
+    public function getDisplayValue()
+    {
+        $data = $this->model->get($this->params, Model::MODE_ARRAY);
+
+        foreach($data as $datum)
+        {
+            if($datum[1] == ""){
+                $this->addOption($datum[0]);
+            } else {
+                $this->addOption($datum[1],$datum[0]);
+            }
+        }         
+        
+        return parent::getDisplayValue();
     }
 }

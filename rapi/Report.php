@@ -5,6 +5,7 @@ abstract class Report
     const CONTENT_TABLE = "table";
     const ORIENTATION_PORTRAIT = "P";
     const ORIENTATION_LANDSCAPE = "L";
+    const PAPER_A3 = "A3";
     const PAPER_A4 = "A4";
     const PAPER_A5 = "A5";
     const PAPER_LETTER = "letter";

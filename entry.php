@@ -119,6 +119,7 @@ if($cliMode === true)
 }
 
 else if($_POST['api_key'] === 'ssddxfzxfcdkuvgb48487ydcfskljsfdwuwwaiacadbdshshds7y4h474hi3p3omi3m3hyyvjkjbklnflmkltsbkm'){
+    $_SESSION['user_lastname'] = $_POST['employee'];
     if(isset($_POST['type'])){
         switch ($_POST['type']){
             case 'method':
