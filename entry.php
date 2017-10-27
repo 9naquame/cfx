@@ -46,8 +46,6 @@ $authExcludedPaths = array();
 $t = new TemplateEngine();
 Application::$templateEngine = $t; 
 
-require SOFTWARE_HOME . "app/bootstrap.php"; 
-
 if($cliMode === true)
 {
     for ($i = 1; $i < $argc; $i++)

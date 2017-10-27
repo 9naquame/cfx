@@ -97,3 +97,4 @@ session_start();
 
 // Load the styleseets and the javascripts
 // Bootstrap the application
+require SOFTWARE_HOME . "app/bootstrap.php"; 
