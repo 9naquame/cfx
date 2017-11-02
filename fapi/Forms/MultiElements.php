@@ -124,7 +124,8 @@ class MultiElements extends Container
         $buttons = new ButtonBar();
         $buttons->setId("multi-form-buttons");
         $buttons->addButton("Clear");
-        $buttons->buttons[0]->addAttribute("onclick","fapiMultiFormRemove('--index--')");
+        $buttons->buttons[0]->setId("clear_{$this->index}_--index--");
+        $buttons->buttons[0]->addAttribute("onclick","fapiMultiFormRemove('{$this->index}', '--index--')");
 
         $elements = $template->getFields(true);
         foreach($elements as $element)
@@ -136,7 +137,7 @@ class MultiElements extends Container
         }
 
         $this->templateName = $template->getName();
-        $template->setId("multiform-content---index--");
+        $template->setId("multiform-content-{$this->index}---index--");
         $template->add($buttons);
         return $this;
     }
@@ -165,9 +166,9 @@ class MultiElements extends Container
                 //$this->clearErrors();
                 $this->template->setData($data);
                 //$retval = $this->template->validate();
-                $this->template->setId("multiform-content-".$index);
-                $this->template->getElementById("multi-form-buttons")->buttons[0]->addAttribute("onclick","fapiMultiFormRemove('$index')");
-                $contents .= "<div id='multi-form-content-$index'>".$this->template->render()."</div>";
+                $this->template->setId("multiform-content-{$this->index}-".$index);
+                $this->template->getElementById("multi-form-buttons")->buttons[0]->addAttribute("onclick","fapiMultiFormRemove('$this->index', '$index')");
+                $contents .= "<div id='multi-form-content-{$this->index}-$index'>".$this->template->render()."</div>";
             }
         }
 
