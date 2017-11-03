@@ -369,4 +369,15 @@ class Utils
             return $number. $ends[$number % 10];
         }
     }
+    public static function specificKeys($array, $pattern) 
+    {
+        $return = [];
+        foreach($array as $key => $value) {
+            if(strpos($key, $pattern) !== false) {
+                $return[$key] = $value;
+            }
+        }
+        
+        return $return;
+    }
 }
