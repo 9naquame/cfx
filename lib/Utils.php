@@ -178,31 +178,27 @@ class Utils
     	return $day == 6 || $day == 7;
     }
 
-    public static function isWorkingDay($date = null)
+    public static function isWorkingDay($date = null, $holidayModel="system.holidays")
     {
     	$date = $date === null ? time() : $date;
-    	if(Utils::isWeekend($date))
-    	{
-    		return false;
-    	}
-    	else
-    	{
-            $holidaysModel = Model::load("system.holidays");
+    	if (Utils::isWeekend($date)) {
+            return false;
+    	} else {
+            $holidaysModel = Model::load($holidayModel);
             $holidaysModel->queryResolve = false;
             $holidays = $holidaysModel->get();
-            foreach($holidays as $holiday)
-            {
+            foreach($holidays as $holiday) {
                 if($holiday["holiday_date"] == $date) return false;
             }
     	}
     	return true;
     }
 
-    public static function getNextWorkingDay($numberOfDays,$date=null, $previous = false)
+    public static function getNextWorkingDay($numberOfDays, $date=null, $holidayModel="system.holidays",  $previous = false)
     {
         $nextWorkingDay = 0;
-        if($date==null) $date = strtotime(date("Y-m-d", Utils::time()));
-        $holidaysModel = Model::load("system.holidays");
+        if($date==null) $date = time();
+        $holidaysModel = Model::load($holidayModel);
         $holidaysModel->queryResolve = false;
         $holidays = $holidaysModel->get();
         $daysCounted = 0;
