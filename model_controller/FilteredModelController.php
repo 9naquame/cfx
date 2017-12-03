@@ -59,8 +59,8 @@ abstract class FilteredModelController extends ModelController
     {
         $ret = parent::getContents().
             "<script type='text/javascript'>
-                wyf.updateFilter('{$this->table->name}', '{$this->filterFieldModel->database}.{$this->filterField}', '{$this->defaultValue}');
-                {$this->table->name}Search();
+                wyf.updateFilter('{$this->listView->getTable()->name}', '{$this->filterFieldModel->database}.{$this->filterField}', '{$this->defaultValue}');
+                {$this->listView->getTable()->name}Search();
             </script>";
         return $ret;
     }

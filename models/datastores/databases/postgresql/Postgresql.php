@@ -497,6 +497,11 @@ class Postgresql extends SQLDBDataStore
             $query .= " WHERE (" . implode(" AND ",$joinConditions) . ") ";
             $query .= (strlen($params["conditions"])>0?" AND (".$params["conditions"].")":"");
             $query .= (strlen($params["hardConditions"])>0?" AND (".$params["hardConditions"].")":"");
+        } 
+        else if (strlen($params["hardConditions"])>0) 
+        {
+            $query .= " WHERE (" . $params["hardConditions"] . ") ";
+            $query .= (strlen($params["conditions"])>0?" AND (".$params["conditions"].")":"");
         }
         else
         {
