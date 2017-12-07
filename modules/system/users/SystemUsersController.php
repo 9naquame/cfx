@@ -1,5 +1,5 @@
 <?php
-class SystemUsersController extends ModelController 
+class SystemUsersController extends FilteredModelController 
 {
     public $listFields = array(
         ".users.user_id",
@@ -11,8 +11,18 @@ class SystemUsersController extends ModelController
 
     public $modelName = ".users";
      
+    protected $filterField = "disabled";
+    protected $filterLabel = "Status";
+    protected $defaultValue = 'No';
+    protected function addListItems()
+    {
+        $this->selectionList->add('Active', 'No');
+        $this->selectionList->add('Disabled', 'Yes');
+    }
+    
     public function setupListView()
     {
+        parent::setupListView();
         $this->listView->addConfirmableOperation(
             'reset_password',
             "Reset Password",
@@ -41,6 +51,7 @@ class SystemUsersController extends ModelController
         $this->model->queryResolve = false;
         $user = $this->model->getWithField2('user_id', $params[0]);
         $user[0]['user_status'] = '0';
+        $user[0]['disabled'] = true;
         $this->model->setData($user[0]);
         $this->model->update('user_id', $params[0]);
         Application::redirect($this->urlPath . "?notification=User has been disabled");
