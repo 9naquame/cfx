@@ -79,7 +79,7 @@ class TextField extends Field
      */
     public function setAsNumeric($min_val=0, $max_val=0)
     {
-        $this->type = "NUMERIC";
+        $this->type = "NUMBER";
         $this->min_val = $min_val;
         $this->max_val = $max_val;
         return $this;
@@ -87,7 +87,7 @@ class TextField extends Field
 
     public function getDisplayValue()
     {
-        if($this->type=="NUMERIC")
+        if($this->type=="NUMBER")
         {
             return ($this->value[0]=="."?"0":"").$this->value;
         }
@@ -128,7 +128,7 @@ class TextField extends Field
         }
 
         //Perform validation of the numeric fields
-        else if($this->type=="NUMERIC")
+        else if($this->type=="NUMBER")
         {
             if(is_numeric($this->getValue()))
             {
