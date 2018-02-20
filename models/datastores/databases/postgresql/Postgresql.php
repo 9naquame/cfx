@@ -459,7 +459,7 @@ class Postgresql extends SQLDBDataStore
                     {
                         $modelPair = "{$model->package},{$other_model->package}";
                         $fieldPair = "{$model->package}.{$other_model->getKeyField()},{$other_model->package}.{$other_model->getKeyField()}";
-                        Application::log('GET_MULTI')->debug("Trying to skip a join", ['model_pair' => $modelPair, 'field_pair' => $fieldPair, 'dont_join' => $params['dont_join']]);
+                        //Application::log('GET_MULTI')->debug("Trying to skip a join", ['model_pair' => $modelPair, 'field_pair' => $fieldPair, 'dont_join' => $params['dont_join']]);
                         if(array_search($modelPair, $params['dont_join']) !== false) continue;
                         if(array_search($fieldPair, $params['dont_join']) !== false) continue;
                     }
@@ -551,7 +551,7 @@ class Postgresql extends SQLDBDataStore
         }
         
         if(!$_REQUEST['__api_mode']){
-            Application::log()->info($params['cache_key']);
+            //Application::log()->info($params['cache_key']);
         }
         
         $data = $other_model->datastore->query($query,$mode, $params['bind'], $params['cache_key']);
