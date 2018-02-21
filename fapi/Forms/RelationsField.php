@@ -141,7 +141,7 @@ class RelationsField extends Field
         $object = [
             "model" => $this->model->package,
             "format" => "json",
-            "fields" => [$this->mainField, $this->subField],
+            "fields" => [$this->subField, $this->keyField],
             "sortField" => $sort[0],
             "and_conditions"=>$this->filter,
             'and_bound_data' => $this->bind,
