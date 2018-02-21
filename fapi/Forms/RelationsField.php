@@ -30,7 +30,7 @@ class RelationsField extends Field
         $this->subSort = $subSort ? $subSort : "$subField asc";
         $this->mainSort = $mainSort ? $mainSort : $this->mainTag;
     }
-
+    
     public function setValue($value)
     {
         parent::setValue($value);
@@ -147,7 +147,8 @@ class RelationsField extends Field
             'and_bound_data' => $this->bind,
             "sort" => $sort[1] ? $sort[1] : 'desc'
         ];
-
+        
+        $this->subSelectionList->setName($this->name);
         $path = Application::$prefix."/system/api/query";
         $params = "object=".urlencode(base64_encode(serialize($object)))."&";
         $params .= "conditions=".urlencode("{$this->model->getDatabase()}.{$this->mainTag}==");
