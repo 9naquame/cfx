@@ -365,25 +365,19 @@ class SystemApiController extends Controller
         
         $redirectedPackage = $object['redirected_package'];
         $packageSchema = $object['package_schema'];
-
         $model = Model::load($object["model"]);
-
-        if(isset($_REQUEST["conditions"]))
-        {
+        $bind = [];
+        
+        if (isset($_REQUEST["conditions"])) {
             $conditions = explode(",",$_REQUEST["conditions"]); 
             array_pop($conditions);
-            $bind = [];
             //array_shift($conditions);
-            foreach($conditions as $i => $condition)
-            {
-                if(substr_count($condition,"=="))
-                {
+            foreach ($conditions as $i => $condition) {
+                if (substr_count($condition,"==")) {
                     $parts = explode("==",$condition);
                     $conditions[$i] = "{$parts[0]} = ?";
                     $bind[] = $parts[1];
-                }
-                else
-                {
+                } else {
                     $parts = explode("=",$condition);
                     $search = $model->getSearch($parts[1],$parts[0]);
                     $conditions[$i] = "{$search['filter']}";//"instr(lower({$parts[0]}),lower('".$model->escape($parts[1])."'))>0";//$parts[0] ." in '".$model->escape($parts[1])."'";
@@ -392,17 +386,23 @@ class SystemApiController extends Controller
             }
             $condition_opr = isset($_REQUEST["conditions_opr"])?$_REQUEST["conditions_opr"]:"AND";
             $conditions = implode(" $condition_opr ",$conditions);
-        }
-
+        } 
+        
+        $filter = $conditions;
+        if ($object['and_conditions']) {
+            $filter = $conditions ? "{$conditions} AND {$object['and_conditions']}" : $object['and_conditions'];
+            $bound = is_array($object['and_bound_data']) ? $object['and_bound_data'] : [];
+            $bind = count($bind) > 0 ? array_merge($bind, $bound) : $bound;
+        } 
+        
         $params = array(
             "fields"=>$object["fields"],
             "sort_field"=>isset($_REQUEST["sort"])?$_REQUEST["sort"]:$object["sortField"],
             "sort_type"=>isset($_REQUEST["sort_type"])?$_REQUEST["sort_type"]:"ASC",
             "limit"=>$object["limit"],
             "offset"=>$_REQUEST["offset"],
-            "filter"=>"($conditions) " . ($object['and_conditions'] != '' ? " AND ({$object['and_conditions']})" : '')
-               . ($_REQUEST['and_conditions'] != '' ? " AND ({$_REQUEST['and_conditions']})" : ''),
-            "bind" => array_merge($bind, is_array($object['and_bound_data']) ? $object['and_bound_data'] : [])
+            "filter"=> $filter,
+            "bind" => $bind
         );
 
         //$data = $model->formatData();
