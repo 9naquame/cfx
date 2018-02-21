@@ -13,40 +13,22 @@ class RelationsField extends Field
     protected $mainField;
     protected $subField;
     protected $mainTag;
-    protected $subTag;
 
     private $filter;
     private $bind = [];
     
-    public function __construct($label, $name, $modelName, $mainField, $subField, $mainTag = null, $subTag = null)
+    public function __construct($label, $name, $modelName, $mainField, $subField, $mainTag = null, $mainSort = null, $subSort = null)
     {
-        $this->setLabel($label);
-        
-        $this->mainSelectionList = new SelectionList();
-        $this->subSelectionList = new SelectionList();
         $this->setName($name);
-        
+        $this->setLabel($label);
+        $this->subField = $subField;
+        $this->mainField = $mainField;
         $this->model = Model::load($modelName);
         $this->keyField = $this->model->keyField;
-        $this->subSort = $subTag ? "$subTag asc" : "$subField asc";
-        $this->mainSort = $mainTag ? "$mainTag asc" : "$mainField asc";
-        
+        $this->mainSelectionList = new SelectionList();
         $this->mainTag = $mainTag ? $mainTag : $mainField;
-        $this->subTag = $subTag ? $subTag : $subField;
-        $this->mainField = $mainField;
-        $this->subField = $subField;
-        
-        $info = $this->model->get([
-            "fields" => [$mainField, $this->mainTag],
-            "distinct" => true,
-            "sort_field" => $this->mainSort
-        ], Model::MODE_ARRAY);
-        
-        foreach ($info as $inf) {
-            $tag = $this->mainTag ? $inf[1] : $inf[0];
-            $this->mainSelectionList->addOption($inf[0], $tag);
-        }
-        
+        $this->subSort = $subSort ? $subSort : "$subField asc";
+        $this->mainSort = $mainSort ? $mainSort : $this->mainTag;
     }
 
     public function setValue($value)
@@ -54,7 +36,7 @@ class RelationsField extends Field
         parent::setValue($value);
         $this->subSelectionList = new SelectionList();
         
-        if($value == "") {
+        if ($value == "") {
             $this->mainSelectionList->setValue(null);
             $this->subSelectionList->setValue(null);
             return;
@@ -78,15 +60,8 @@ class RelationsField extends Field
         foreach($subValues as $subValue) {
             $this->subSelectionList->addOption($subValue[0], $subValue[1]);
         }
+        
         $this->subSelectionList->setValue($value);
-    }
-    
-    public function setName($name)
-    {
-        parent::setName($name);        
-        $this->mainSelectionList->setId($name."_main");
-        $this->subSelectionList->setName($name); 
-        return $this;
     }
     
     public function setConditions($filter, $bindData = [])
@@ -146,9 +121,23 @@ class RelationsField extends Field
 
     public function render()
     {
+        $info = $this->model->get([
+            "fields" => [$this->mainField, $this->mainTag],
+            "distinct" => true,
+            "filter" => $this->filter,
+            "bind" => $this->bind,
+            "sort_field" => $this->mainSort
+        ], Model::MODE_ARRAY);
+        
+        foreach ($info as $inf) {
+            $tag = $inf[1] ? $inf[1] : $inf[0];
+            $this->mainSelectionList->addOption($inf[0], $tag);
+        }
+        
         $sort = explode(" ", $this->subSort);
         $key = str_replace(array(".","[]"),array("_",""), $this->name);
-        $this->mainSelectionList->addAttribute("onchange","fapi_change_{$key}()");        
+        $this->mainSelectionList->addAttribute("onchange","fapi_change_{$key}(this)");
+        
         $object = [
             "model" => $this->model->package,
             "format" => "json",
@@ -167,15 +156,16 @@ class RelationsField extends Field
                "<br/>".
                 $this->subSelectionList->render()
                 ."<script type='text/javascript'>
-                    function fapi_change_{$key}() {
-                        document.getElementById('{$this->name}').innerHTML='<option></option>';
+                    function fapi_change_{$key}(element) {
+                        var list = element.nextSibling.nextSibling;
+                        list.innerHTML='<option></option>';
+                        
                         $.ajax({
                             type:'GET',
                             url:'$path',
                             dataType: 'json',
-                            data: '$params'+escape(document.getElementById('{$this->name}_main').value)+',',
+                            data: '$params'+escape(element.value)+',',
                             success: function (responses) {
-                                var list = document.getElementById('{$this->name}');
                                 var n = list.length;
                                 var i;
                                 
