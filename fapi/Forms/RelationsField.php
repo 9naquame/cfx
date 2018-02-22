@@ -148,6 +148,10 @@ class RelationsField extends Field
             "sort" => $sort[1] ? $sort[1] : 'desc'
         ];
         
+        if (!$this->subSelectionList) {
+            $this->subSelectionList = new SelectionList();
+        }
+        
         $this->subSelectionList->setName($this->name);
         $path = Application::$prefix."/system/api/query";
         $params = "object=".urlencode(base64_encode(serialize($object)))."&";
