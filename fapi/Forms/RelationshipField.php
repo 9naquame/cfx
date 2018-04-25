@@ -148,7 +148,8 @@ class RelationshipField extends Field
     public function render()
     {
         $sort = explode(" ", $this->subSort);
-        $this->mainSelectionList->addAttribute("onchange","fapi_change_{$this->name}()");        
+        $key = str_replace(array(".","[]"),array("_",""), $this->name);
+        $this->mainSelectionList->addAttribute("onchange","fapi_change_{$key}()");        
         $object = array
         (
             "model"=>$this->subModel->package,
@@ -166,7 +167,7 @@ class RelationshipField extends Field
                "<br/>".
                 $this->subSelectionList->render()
                 ."<script type='text/javascript'>
-                    function fapi_change_{$this->name}()
+                    function fapi_change_{$key}()
                     {
                         document.getElementById('{$this->name}').innerHTML='<option></option>';
                         $.ajax({

@@ -74,7 +74,7 @@ class Db
     {
         if($instance === null) $instance = Db::$lastInstance;
         $instance = Db::getCachedInstance($instance);
-        Application::log('DB')->debug("Raw Query [$query]");
+//        Application::log('DB')->debug("Raw Query [$query]");
         $result = $instance->query($query);
         return $result;
     }
@@ -94,7 +94,7 @@ class Db
             Db::$statements[$key] = $statement;
         }
 
-        Application::log('DB')->debug("Bound Query [$query]", ['bind' => $bindData]);
+//        Application::log('DB')->debug("Bound Query [$query]", ['bind' => $bindData]);
         $statement->execute($bindData);
         
         if($mode == Db::MODE_ARRAY)
@@ -112,7 +112,7 @@ class Db
         if($instance === null) $instance = Db::$lastInstance;
         $instance = Db::getCachedInstance($instance);
         try{
-            Application::log('DB')->debug("Query [$query]");           
+//            Application::log('DB')->debug("Query [$query]");           
             $result = $instance->query($query);
         }
         catch(PDOException $e)

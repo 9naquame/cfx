@@ -340,6 +340,15 @@ class PDFDocument extends fpdf\FPDF_EXTENDED
             $keys = array_keys($widths);
             $i = reset($keys);
             //print implode(",", $fields) . "<br/>";
+            $cellHeight = $this->style['cell_height'];
+            foreach ($fields as $field)
+            {
+                $fieldHeight = substr_count($field, "\n") * $this->style["font_size"] * .6;
+                if ($fieldHeight > $cellHeight) {
+                    $cellHeight = $fieldHeight;
+                }
+            }
+            
             foreach ($fields as $field)
             {
                 switch ($params["type"][$i])
@@ -364,7 +373,7 @@ class PDFDocument extends fpdf\FPDF_EXTENDED
                 if ($params['wrap_cell'] === true)
                 {
                     $this->WrapCell(
-                            $widths[$i], $this->style['cell_height'], $field, $border, 0, $align, true
+                            $widths[$i], $cellHeight, $field, $border, 0, $align, true
                     );
                 }
                 else
