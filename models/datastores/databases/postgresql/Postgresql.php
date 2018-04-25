@@ -540,7 +540,7 @@ class Postgresql extends SQLDBDataStore
         } 
         
         $bind = strpos($query, '?') === false ? null : $params['bind'];
-        $count = count($other_model->datastore->query($query,$mode, $bind, $params['cache_key']));
+        $count = count($other_model->datastore->query($query,$mode, $bind));
 
         if(isset($params["limit"]))
         {
