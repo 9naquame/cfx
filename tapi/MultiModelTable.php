@@ -230,6 +230,7 @@ class MultiModelTable extends Table
                         </a>
                     </li>".
                     "<li><a onclick=\"wyf.tapi.switchPage('$this->name',".($params["page"]+1).")\">Next &gt;</a></li>" .
+                    "<li><a onclick=\"wyf.tapi.switchPage('$this->name',".($this->tableData['pages']-1).")\">Last &gt;&gt;</a></li>" .
                 "<li> | </li>
                 <li> 
                     Page <input style='font-size:small; width:50px' value = '".($params["page"]+1)."'
