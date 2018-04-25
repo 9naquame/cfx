@@ -537,7 +537,10 @@ class Postgresql extends SQLDBDataStore
             {
                 if($field != $params["group_field"]) $query .= ",".$field;
             }
-        }
+        } 
+        
+        $bind = strpos($query, '?') === false ? null : $params['bind'];
+        $count = count($other_model->datastore->query($query,$mode, $bind, $params['cache_key']));
 
         if(isset($params["limit"]))
         {
@@ -565,6 +568,9 @@ class Postgresql extends SQLDBDataStore
                 Cache::add(
                     "{$params['cache_key']}_meta",
                     [
+                        'count' => $count,
+                        'page_count' => count($data),
+                        "pages" => ceil($count / $params['limit']),
                         'fieldInfos' => $fieldDescriptions,
                         'headers' => $headers,
                         'rawFields' => $rawFields
@@ -574,6 +580,9 @@ class Postgresql extends SQLDBDataStore
             return array
                 (
                     "data" => $data,
+                    "count" => $count,
+                    "page_count" => count($data),
+                    "pages" => ceil($count / $params['limit']),
                     "fieldInfos" => $fieldDescriptions,
                     "headers" => $headers,
                     "rawFields" => $rawFields,
