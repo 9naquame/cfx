@@ -56,6 +56,6 @@ class PgFileStore extends postgresql
     public static function deleteFile($oid) 
     {
         $model = PgFileStore::getModel();
-        $model->delete("object_id", $oid);
+        $model->delete(['filter' => 'object_id = ?', 'bind' => [$oid]]);
     }
 }
