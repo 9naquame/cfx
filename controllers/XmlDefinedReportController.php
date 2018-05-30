@@ -214,6 +214,7 @@ class XmlDefinedReportController extends ReportController {
                         $field = (string) $field;
 
                         if (array_search($model->getKeyField(), $this->referencedFields) === false || $fieldInfo["type"] == "double" || $fieldInfo["type"] == "date") {
+                            $found = false;
                             if ($value != null) {
                                 $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]}= ?";
                                 $boundData[] = (string)$value;
@@ -223,6 +224,7 @@ class XmlDefinedReportController extends ReportController {
                             switch ($fieldInfo["type"]) {
                                 case "boolean":
                                     if ($_POST[$name . "_" . $fieldInfo["name"] . "_option"] != "") {
+                                        $found = true;
                                         $filterSummaries[] = "{$headers[$key]} is {$_POST[$name . "_" . $fieldInfo["name"] . "_option"]}";
                                         $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} is {$_POST[$name . "_" . $fieldInfo["name"] . "_option"]}";
                                     }
@@ -231,6 +233,7 @@ class XmlDefinedReportController extends ReportController {
                                 case "string":
                                 case "text":
                                     if ($_POST[$name . "_" . $fieldInfo["name"] . "_value"] != "") {
+                                        $found = true;
                                         switch ($_POST[$name . "_" . $fieldInfo["name"] . "_option"]) {
                                             case "CONTAINS":
                                                 $filterSummaries[] = "{$headers[$key]} containing {$_POST[$name . "_" . $fieldInfo["name"] . "_value"]}";
@@ -254,6 +257,7 @@ class XmlDefinedReportController extends ReportController {
                                 case "integer":
                                 case "double":
                                     if ($_POST[$name . "_" . $fieldInfo["name"] . "_start_value"] != "") {
+                                        $found = true;
                                         switch ($_POST[$name . "_" . $fieldInfo["name"] . "_option"]) {
                                             case "EQUALS":
                                                 $filterSummaries[] = "{$headers[$key]} equals {$_POST[$name . "_" . $fieldInfo["name"] . "_start_value"]}";
@@ -287,6 +291,7 @@ class XmlDefinedReportController extends ReportController {
                                 case "datetime":
                                 case "date":
                                     if ($_POST[$name . "_" . $fieldInfo["name"] . "_start_date"] != "") {
+                                        $found = true;
                                         switch ($_POST[$name . "_" . $fieldInfo["name"] . "_option"]) {
                                             case "EQUALS":
                                                 $filterSummaries[] = "{$headers[$key]} on {$_POST[$name . "_" . $fieldInfo["name"] . "_start_date"]}";
@@ -315,6 +320,7 @@ class XmlDefinedReportController extends ReportController {
 
                                 case "enum":
                                     if (count($_POST[$name . "_" . $fieldInfo["name"] . "_value"]) >= 1 && $_POST[$name . "_" . $fieldInfo["name"] . "_value"][0] != ""/* $_POST[$name."_".$fieldInfo["name"]."_value"] != "" */) {
+                                        $found = true;
                                         $m = $models[$modelInfo["model"]];
                                         if ($_POST[$name . "_" . $fieldInfo["name"] . "_option"] == "INCLUDE") {
                                             $summary = array();
@@ -350,6 +356,13 @@ class XmlDefinedReportController extends ReportController {
                                             $filters[] = "(" . implode(" OR ", $condition) . ")";
                                     }
                                     break;
+                            } if (isset($_POST[$name . "_" . $fieldInfo["name"] . "_nulls"])) {
+                                $count = count($filters) - 1;
+                                if ($found) {
+                                    $filters[$count] = "({$filters[$count]} OR {$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} is null)";
+                                } else {
+                                    $filters[] = "{$models[$modelInfo["model"]]->getDatabase()}.{$fieldInfo["name"]} is null";
+                                }
                             }
                         }
                         else {
@@ -553,12 +566,13 @@ class XmlDefinedReportController extends ReportController {
             $numConcatFields = 0;
             $fields = $table->xpath("/rapi:report/rapi:table[@name='{$table["name"]}']/rapi:fields/rapi:field");
             $labels = $table->xpath("/rapi:report/rapi:table[@name='{$table["name"]}']/rapi:fields/rapi:field/@label");
-            $filters = new TableLayout(count($fields) + 1, 5);
+            $filters = new TableLayout(count($fields) + 1, 6);
 
             $filters
                     ->add(Element::create("Label", "Field")->addCssClass("header-label"), 0, 0)
                     ->add(Element::create("Label", "Options")->addCssClass("header-label"), 0, 1)
-                    ->add(Element::create("Label", "Exclude")->addCssClass("header-label"), 0, 4)
+                    ->add(Element::create("Label", "Include Nulls")->addCssClass("header-label"), 0, 4)
+                    ->add(Element::create("Label", "Exclude")->addCssClass("header-label"), 0, 5)
                     ->resetCssClasses()
                     ->addCssClass("filter-table")
                     ->setRenderer("default");
@@ -661,7 +675,8 @@ class XmlDefinedReportController extends ReportController {
                         if (isset($field["hide"])) {
                             $filters->add(Element::create("HiddenField", "{$table["name"]}.{$fieldInfo["name"]}_ignore", "1"), $i, 4);
                         } else {
-                            $filters->add(Element::create("Checkbox", "", "{$table["name"]}.{$fieldInfo["name"]}_ignore", "", "1"), $i, 4);
+                            $filters->add(Element::create("Checkbox", "", "{$table["name"]}.{$fieldInfo["name"]}_nulls", "", "1"), $i, 4);
+                            $filters->add(Element::create("Checkbox", "", "{$table["name"]}.{$fieldInfo["name"]}_ignore", "", "1"), $i, 5);
                         }
                     } else {
                         $enum_list = new ModelSearchField();
