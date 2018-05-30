@@ -370,6 +370,11 @@ class Application
         }
         return $ret;
     }
+    
+    public static function snakize($string)
+    {
+        return strtolower(str_replace(" ", "_", $string));
+    }
 
     /**
      * A utility method which converts a string to lowecase while converting
