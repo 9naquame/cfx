@@ -204,6 +204,9 @@ function fapiUpdateSearchField(name, url, fields, element, boldFirst, onChangeFu
     {
         $("#" + name + "_search_area").html(content).hide('fast');
         return;
+    } else if ($("#" + name + "_search_area").val() === '') {
+        $("#" + name).val('');
+        return;
     }
 
     fields = JSON.parse(unescape(fields));
