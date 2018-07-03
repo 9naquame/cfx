@@ -202,13 +202,11 @@ function fapiUpdateSearchField(name, url, fields, element, boldFirst, onChangeFu
     var conditions = '';
     if (element.value == '')
     {
+        $("#" + name).val('');
         $("#" + name + "_search_area").html(content).hide('fast');
         return;
-    } else if ($("#" + name + "_search_area").val() === '') {
-        $("#" + name).val('');
-        return;
     }
-
+    
     fields = JSON.parse(unescape(fields));
 
     for (var i = 0; i < fields.length; i++)
