@@ -41,7 +41,10 @@ class ImageField extends Field
         $this->addAttribute("name",$this->getName());
         $style = "width:{$this->width};height:{$this->height};right:0;left:0;";
         $file = file_exists($this->getValue()) ? $this->getValue() : $this->default;
-        $ret .= "<img id='{$this->getId()}' src='/{$file}' alt='{$this->alt}' style='$style'><div> ";
+          
+        $src = $file ? "src={$file}" : '';
+        $alt = $this->alt ? "{$this->alt}" : '';
+        $ret .= "<img id='{$this->getId()}' {$src} {$alt} style='$style'><div> ";
 
         return $ret;
     }
