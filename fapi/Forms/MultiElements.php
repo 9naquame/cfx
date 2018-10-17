@@ -58,7 +58,7 @@ class MultiElements extends Container
     
     public function getId()
     {
-        return str_replace(".", "_", $this->template->getId());
+        return str_replace(".", "_", $this->template->getName());
     }
 
     public function validate()
