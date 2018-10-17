@@ -373,7 +373,7 @@ abstract class Model implements ArrayAccess
                             foreach($rowErrors['errors'] as $fieldName => $error)
                             {
                                 if($error[0] == '') continue;
-                                $errors[$relationship][] = "Errors on line " . ($i + 1) . ": <b>{$fieldName}</b> ({$error[0]})";
+                                $errors[$relationship][] = "Errors on line " . ($i + 1) . ": {$error[0]}";
                                 $numErrors++;
                             }
                         }

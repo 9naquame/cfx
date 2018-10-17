@@ -55,6 +55,11 @@ class MultiElements extends Container
             $this->setTemplate($template);
         }
     }
+    
+    public function getId()
+    {
+        return str_replace(".", "_", $this->template->getName());
+    }
 
     public function validate()
     {
