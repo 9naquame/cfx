@@ -20,7 +20,7 @@ class SystemSideMenuController extends Controller
     /**
      * @see lib/controllers/Controller#getContents()
      */
-    protected function getContents()
+    public function getContents()
     {
         //return $this->doMenu($this->menu);
     }
@@ -56,7 +56,7 @@ class SystemSideMenuController extends Controller
             $nuId = $this->id+1;
             $path = count( $item["children"]) > 0 ? "javascript:" : Application::getLink($item["path"]);
             $extra = count($item["children"]) > 0 ? 
-                     "onclick='expand(\"menu-$nuId\")' style='font-weight:bold'"
+                     "onclick='wyf.menus.expand(\"menu-$nuId\")' class='expandable' style='font-weight:bold'"
                      :"";
             $ret = $ret . "<li><a href='$path' $extra>{$item["title"]}</a>";
             if(count($item["children"]>0))
@@ -69,4 +69,3 @@ class SystemSideMenuController extends Controller
         return $ret;
     }
 }
-
