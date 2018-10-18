@@ -42,8 +42,8 @@ class FileUploader extends Field
 
     public function render()
     {        
-        $id = $this->getId();
         $name = $this->getName();
+        $id = str_replace('-', '_', $this->getId());
         $hidden = new HiddenField($name,$this->getValue());
 
         $this->addAttribute("name",$this->getName());
