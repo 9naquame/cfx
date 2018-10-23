@@ -46,6 +46,12 @@ class ImageField extends Field
     {
         return $this->absolute ? "/{$this->getValue()}" : $this->getValue();
     }
+    
+    public function getDisplayValue()
+    {
+        parent::getDisplayValue();
+        return $this->render();
+    }
 
     public function render()
     {
