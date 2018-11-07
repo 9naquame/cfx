@@ -169,13 +169,23 @@ else
         else
         {
             $menuFile = SOFTWARE_HOME . "app/cache/menus/side_menu_{$_SESSION["role_id"]}.html";
-        }
+        } 
+        
+        $menuObject = SOFTWARE_HOME . "app/cache/menus/menu_{$_SESSION["role_id"]}.object";
 
         if(file_exists($menuFile))
         {
             $t->assign(
                 'side_menu', 
                 file_get_contents($menuFile)
+            );
+        }
+        
+        if(file_exists($menuObject))
+        {
+            $t->assign(
+                'menu_object', 
+                file_get_contents($menuObject)
             );
         }
 
