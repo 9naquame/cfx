@@ -104,6 +104,16 @@ class SystemRolesController extends ModelController
                 serialize($flatened)     
             );
             
+            file_put_contents(
+                "app/cache/menus/menu_{$params[0]}.object",
+                serialize($menu)     
+            );
+            
+            file_put_contents(
+                "app/cache/menus/flat_menu_{$params[0]}.object",
+                serialize($flatened)     
+            );
+            
             User::log("Set permissions");
         }
 

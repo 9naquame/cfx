@@ -172,6 +172,7 @@ else
         } 
         
         $menuObject = SOFTWARE_HOME . "app/cache/menus/menu_{$_SESSION["role_id"]}.object";
+        $flatMenuObject = SOFTWARE_HOME . "app/cache/menus/flat_menu_{$_SESSION["role_id"]}.object";
 
         if(file_exists($menuFile))
         {
@@ -186,6 +187,14 @@ else
             $t->assign(
                 'menu_object', 
                 file_get_contents($menuObject)
+            );
+        }
+        
+        if (file_exists($flatMenuObject))
+        {
+            $t->assign(
+                'flat_menu_object', 
+                file_get_contents($flatMenuObject)
             );
         }
 
