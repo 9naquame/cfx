@@ -25,21 +25,25 @@ class ImageField extends Field
     public function setWidth($width)
     {
         $this->width = $width;
+        return $this;
     }
 
     public function setHeight($height)
     {
         $this->height = $height;
+        return $this;
     }
     
     public function setAlt($alt)
     {
         $this->alt = $alt;
+        return $this;
     }
     
     public function setDefault($default)
     {
         $this->default = $default;
+        return $this;
     }
     
     public function getImage()
