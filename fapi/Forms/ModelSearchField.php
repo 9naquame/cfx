@@ -18,13 +18,17 @@ class ModelSearchField extends Field
     private $andConditions;
     private $andBoundData = [];
     private $onChangeAttribute;
+    private $useSearch = false;
     
     public function __construct($path=null,$value=null, $boldFirst = true)
     {
         if($path!=null)
         {
             $info = Model::resolvePath($path);
-            if ($value=="") $value = $info["field"];
+            if ($value=="" || $value == $info["field"]) {
+                $value = $info["field"];
+                $this->fieldName = $value;
+            }
             $this->model = model::load($info["model"]);
             $field = $this->model->getFields(array($value));
 
@@ -37,6 +41,12 @@ class ModelSearchField extends Field
         }
         
         $this->boldFirst = $boldFirst;
+    }
+    
+    public function useSearch($boolean)
+    {
+        $this->useSearch = $boolean;
+        return $this;
     }
     
     public function setAndConditions($andConditions, $bindData = [])
@@ -122,17 +132,36 @@ class ModelSearchField extends Field
         
         if($this->getValue()!="")
         {
-            $data = $this->model[$this->getValue()];
+            if ($this->fieldName) {
+                $data = $this->model->get(['filter' => "{$this->fieldName} = ?", 'bind' => [trim($this->getValue())]]);
+            } else {
+                $data = $this->model[$this->getValue()];
+            }
             for($i=1;$i<count($jsonSearchFields);$i++)
             {
                 $val .= $data[0][$jsonSearchFields[$i]]." ";
             }
+            if ($this->useSearch) {
+                $text->setValue($this->getValue());
+            } 
             $text->setValue($val);
+        } else {
+            $text->setValue('');
         }
-        
-        $text->setId($id."_search_entry");        
+
+        $text->setId($id."_search_entry");
+        $useSearch = $this->useSearch ? 'true' : 'false';  
         $ret .= $text->render();
         $ret .= "<div class='fapi-popup' id='{$id}_search_area'></div>";
+        $ret .= "<script type='text/javascript'>
+            $(document).on('keydown blur change', function(event){
+                if ($('#{$text->getId()}').val() === '') {
+                    $('#{$id}').val('');
+                } else if ($useSearch === true){
+                    $('#{$id}').val($('#{$text->getId()}').val());
+                }
+            });
+        </script>";
         return $ret;
     }
     
@@ -158,11 +187,23 @@ class ModelSearchField extends Field
     public function getDisplayValue()
     {
         $jsonSearchFields = array_reverse($this->searchFields);
-        $data = $this->model[$this->getValue()];
+        if ($this->getValue() != '') {
+            if ($this->fieldName) {
+                $data = $this->model->get(['filter' => "{$this->fieldName} = ?", 'bind' => [trim($this->getValue())]]);
+            } else {
+                $data = $this->model[$this->getValue()];
+            }
+        } else {
+            $data = [];
+        }
+
         $val = "<b>".$data[0][$jsonSearchFields[0]]."</b> ";
         for($i=1;$i<count($jsonSearchFields);$i++)
         {
             $val .= $data[0][$jsonSearchFields[$i]]." ";
+        } 
+        if ($this->useSearch) {
+            $val = $this->getValue();
         }
         return $val;
     }
