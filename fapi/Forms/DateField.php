@@ -48,7 +48,7 @@ class DateField extends TextField
         $this->addAttribute("data-kal", "format: 'DD/MM/YYYY'");
         $this->addAttribute("id" , $this->getId());
         $this->addAttribute("name" , $this->getName());
-        $this->addAttribute("placeholder", "DD/MM/YYYY");
+        $this->addAttribute("placeholder",  $this->hasTime ? "DD/MM/YYYY HH:MM:SS" : "DD/MM/YYYY");
         $this->addAttribute("pattern", "\d{1,2}/\d{1,2}/\d{4}");
         $this->addAttribute("value" , $this->getValue()!=="" && $this->getValue()!==false ? date($format ,(int)$this->getValue()) : $_REQUEST[$this->getName()]);
         return "<input ".$this->getAttributes()." />";
