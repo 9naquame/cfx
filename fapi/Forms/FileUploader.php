@@ -5,22 +5,26 @@ class FileUploader extends Field
     private $width = '200px';
     private $height = '200px';
             
-    public function __construct($label="", $name="", $description="", $value= "")
+    public function __construct($label="", $name="", $description="", $value= "", $download = "download")
     {
         Field::__construct($name, $value);
         Element::__construct($label, $description);
         $this->addAttribute("type","file");
         $this->hasFile = true;
+
+        $this->download = $download;
     }
     
     public function setWidth($width)
     {
         $this->width = $width;
+        return $this;
     }
     
     public function setHeight($height)
     {
         $this->height = $height;
+        return $this;
     }
     
     public function getValue()
@@ -47,7 +51,7 @@ class FileUploader extends Field
         $hidden = new HiddenField($name,$this->getValue());
 
         $this->addAttribute("name",$this->getName());
-        $image = new ImageField('', "{$this->getName()}_image", '', $this->getValue());
+        $image = new ImageField('', "{$this->getName()}_image", '', $this->getValue(), $this->width, $this->height);
         
         $ret = $hidden->setId($id)->render(); 
         $ret .= $image->setId("{$id}_image")->render();
@@ -72,6 +76,9 @@ class FileUploader extends Field
                     }
                 }
             </script>";
+        } else {
+            $download =Application::labelize($this->download);
+            $ret .= "<a href='{$this->getValue()}' download='{$this->download}'>Download {$download}</a>";
         }
         
         return $ret;
