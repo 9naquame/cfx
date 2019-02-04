@@ -180,6 +180,8 @@ class Application
      * @var boolean
      */
     private static $sideMenuHidden = false;
+
+    public static $notifications = [];
     
     public static $logger;
     
@@ -300,6 +302,7 @@ class Application
             $t->assign('module_name', $module->label);
             $t->assign('module_description',$module->description);
             $t->assign('side_menu_hidden', self::$sideMenuHidden);
+            $t->assign('notifications', self::$notifications);
 
             foreach(array_keys(Application::$menus) as $key)
             {
