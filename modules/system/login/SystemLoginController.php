@@ -107,34 +107,55 @@ class SystemLoginController extends Controller
      */
     public static function callback($data, $form, $callback_pass = null)
     {
-        $user = Model::load("system.users");
-        $userData = $user->get(
-            array(
-                "filter" => "user_name=?",
-                'bind' => [$data["username"]]
-            ), Model::MODE_ASSOC, false, false);
-                
-        if(count($userData) == 0)
-        {
-            $form->addError("Please check your username or password");
+        $config = Application::$config;
+        $users = Model::load("system.users");                
+        if ($config['allow_ldap_auth'] === true) {
+            $counter = 0;
+            $ldap = $config['ldap'];
+            $count = count(explode('.', $ldap['domain']));
+            $handle = ldap_connect($ldap['host'], $ldap['port']) or die("Could not connect to {$ldap['host']}");
+            ldap_set_option($handle, LDAP_OPT_PROTOCOL_VERSION, 3);
+            ldap_set_option($handle, LDAP_OPT_REFERRALS, 0);
+
+            if (trim($ldap['prefix'])) {
+                $user = trim($ldap['prefix']).$data['username'];
+            } else if (!strpos($data['username'], '@')) {
+                $user = "{$data['username']}@{$ldap['domain']}";
+            } else {
+                $user = $data['username'];
+            } foreach(explode('.', $ldap['domain']) as $dc) {
+                $domain .= "dc={$dc}" . (++$counter == $count ? '' : ',');
+            }
+            
+            $password = $data['password'];
+            $bind = ldap_bind($handle, $user, $password);
+            $data["username"] = "{$data['username']}@{$ldap['domain']}";
+
+            $ldapError = ldap_error($handle);
+        } 
+        
+        $userData = $users->get([
+            'filter' => $bind ? 'email = ?' : 'user_name = ?',
+            'bind' => [$data['username']]
+        ], Model::MODE_ASSOC, false, false);
+        
+        if (count($userData) == 0) {
+            $form->addError($ldapError ? $ldapError : "Please check your username or password");
             return true;
-        }
-        else if($userData[0]["role_id"] == null)
-        {
+        } else if($userData[0]["role_id"] == null) {
             $form->addError("Sorry! your account has no role attached!"); 
             return true;
-        }
-        else if(User::getPermission("can_log_in_to_web", $userData[0]["role_id"]))
-        {
+        } else if(User::getPermission("can_log_in_to_web", $userData[0]["role_id"])) {
             $home = Application::getLink("/");
             
             /* Verify the password of the user or check if the user is logging in
              * for the first time.
              */
-            if($userData[0]["password"] == md5($data["password"]) || $userData[0]["user_status"] == 2 )
-            {
-                switch ($userData[0]["user_status"])
-                {
+            if  ($userData[0]["user_status"] == 2 && $bind) {
+                $userData[0]["user_status"] = 1;
+                User::log("Logged in for first time through LDAP");
+            } if ($userData[0]["password"] == md5($data["password"]) || $userData[0]["user_status"] == 2 || $bind) {
+                switch ($userData[0]["user_status"]) {
                     case "0":
                         $form->addError("Your account is currently inactive");
                         $form->addError("Please contact the system administrator.");
@@ -171,15 +192,12 @@ class SystemLoginController extends Controller
                         Application::redirect($home);
                         break;
                 }
-            }
-            else
-            {
+            } else {
+                var_dump($ldapError);die();
                 $form->addError("Please check your username or password");
                 return true;
             }
-        }
-        else
-        {
+        } else {
             $form->addError("You are not allowed to log in from this terminal");
             return true;
         }
