@@ -110,6 +110,7 @@ class ModelSearchField extends Field
             "format"=>"json",
             "fields"=>$this->searchFields,
             "limit"=>20,
+            "distinct" => true,
             "conditions"=>"",
             "and_conditions"=>$this->andConditions,
             'and_bound_data' => $this->andBoundData,
