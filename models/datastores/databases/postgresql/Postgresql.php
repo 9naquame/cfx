@@ -65,7 +65,7 @@ class Postgresql extends SQLDBDataStore
         $joins = "";
         //$do_join = count($references)>0?true:false;
 
-        $fieldList = $this->getExpandedFieldList($fields,$references,$resolve);
+        $fieldList = $this->getExpandedFieldList($fields,$references,$resolve, $params["antiresolve"]);
         $field_list = $fieldList["fields"];
         $expanded_fields = $fieldList["expandedFields"];
         $do_join = $fieldList["doJoin"];
