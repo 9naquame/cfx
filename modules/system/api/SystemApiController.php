@@ -400,6 +400,7 @@ class SystemApiController extends Controller
             "sort_field"=>isset($_REQUEST["sort"])?$_REQUEST["sort"]:$object["sortField"],
             "sort_type"=>isset($_REQUEST["sort_type"])?$_REQUEST["sort_type"]:"ASC",
             "limit"=>$object["limit"],
+            "distinct" => $object['distinct'],
             "offset"=>$_REQUEST["offset"],
             "filter"=> $filter,
             "bind" => $bind

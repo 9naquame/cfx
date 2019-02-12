@@ -19,7 +19,7 @@ abstract class SQLDBDataStore extends DataStore
     public static $activeDriverClass;
     public $modelName;
 
-    public function getExpandedFieldList($fields,$references,$resolve=true,$functions=null)
+    public function getExpandedFieldList($fields,$references,$resolve=true, $antiresolve, $functions=null)
     {
         if($fields == null) $fields = array_keys($this->fields);
 
@@ -31,6 +31,7 @@ abstract class SQLDBDataStore extends DataStore
         foreach($fields as $field)
         {
             $subFields = explode(",",$field);
+            $resolved = strpos($antiresolve, $this->fields[$field]['name']) === false ? $resolve : !$resolve;
             if(count($subFields)==1)
             {
                 $referred = false;
@@ -48,7 +49,7 @@ abstract class SQLDBDataStore extends DataStore
                 if(!$referred)
                 {
                     $r_expanded_fields[$field]=(count($references)>0?$this->database.".":"").(string)$field;
-                    if($resolve)
+                    if($resolved)
                         $expanded_fields[$field]= $this->formatField($this->fields[$field],(count($references)>0?$this->database.".":"").(string)$field);
                     else
                         $expanded_fields[$field]=$this->defaultFormatField($this->fields[$field],$r_expanded_fields[$field])." as \"{$this->fields[$field]["name"]}\"";
@@ -62,7 +63,7 @@ abstract class SQLDBDataStore extends DataStore
                     if(!$referred)
                     {
                         $r_expanded_subFields[$subField]=(count($references)>0?$this->database.".":"").(string)$subField;
-                        if($resolve)
+                        if($resolved)
                         {
                             $expanded_subFields[$subField]= $this->formatField($this->fields[$subField],(count($references)>0?$this->database.".":"").(string)$subField,false);
                         }
