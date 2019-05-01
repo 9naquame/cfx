@@ -129,7 +129,7 @@ class SystemLoginController extends Controller
             
             $password = $data['password'];
             $bind = ldap_bind($handle, $user, $password);
-            $data["username"] = "{$data['username']}@{$ldap['domain']}";
+            $bind ? $data["username"] = "{$data['username']}@{$ldap['domain']}" : null;
 
             $ldapError = ldap_error($handle);
         } 
@@ -193,7 +193,6 @@ class SystemLoginController extends Controller
                         break;
                 }
             } else {
-                var_dump($ldapError);die();
                 $form->addError("Please check your username or password");
                 return true;
             }
