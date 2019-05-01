@@ -215,10 +215,17 @@ class PDFDocument extends fpdf\FPDF_EXTENDED
         $this->Ln();
     }
 
-    public function totalsBox($totals, $params)
+    public function totalsBox($totals, $params, $style = null)
     {
+        if ($this->style == null) {
+            $style["font_size"] = $style["font_size"] == "" ? 8 : $style["font_size"];
+            $style["cell_height"] = isset($style["cell_height"]) ? $style["cell_height"] : $style["font_size"] * 0.353 + 1;
+            
+            $this->style = $style;
+        }
+
         $this->SetFont
-                (isset($this->style["font"]) ? $this->style["font"] : "Helvetica", ($this->style["bold"] ? "B" : "B") . ($this->style["underline"] ? "U" : "") . ($this->style["italics"] ? "I" : ""), isset($this->style["font_size"]) ? $this->style["font_size"] : 8
+            (isset($this->style["font"]) ? $this->style["font"] : "Helvetica", ($this->style["bold"] ? "B" : "B") . ($this->style["underline"] ? "U" : "") . ($this->style["italics"] ? "I" : ""), isset($this->style["font_size"]) ? $this->style["font_size"] : 8
         );
 
         $arrayWidth = $this->twidth * (isset($this->style["width"]) ? $this->style["width"] : 1);
