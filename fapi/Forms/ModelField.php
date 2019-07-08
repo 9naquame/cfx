@@ -81,4 +81,9 @@ class ModelField extends SelectionList
         
         return parent::getDisplayValue();
     }
+
+    public function getModel()
+    {
+        return $this->model;
+    }
 }
