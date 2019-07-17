@@ -127,7 +127,7 @@ class PDFReport extends Report
             case "table":
                 if($content->style["totalsBox"]==true)
                 {
-                    $this->pdf->totalsBox($content->getData(),$content->data_params);
+                    $this->pdf->totalsBox($content->getData(),$content->data_params,$content->style);
                 }
                 else if($content->style["autoTotalsBox"])
                 {
