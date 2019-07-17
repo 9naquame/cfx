@@ -170,6 +170,11 @@ abstract class Element
         return $this;
     }
 
+    public function getParent() 
+    {
+        return $this->parent;
+    }
+
     /**
      * Sets the method for the form.
      */
